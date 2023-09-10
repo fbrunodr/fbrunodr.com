@@ -1,0 +1,161 @@
+.navbar{
+    background: linear-gradient(90deg, rgb(47, 50, 58, 0.50) 0%, rgb(47, 50, 58, 0.40) 100%);
+    height: 80px;
+    display: flex;
+    font-size: 1.2rem;
+    position: relative;
+    z-index: 1000;
+    border-bottom: solid;
+    border-width: 2px;
+    border-color: rgb(51,48,54, 1);
+}
+
+.navbar.dark{
+    background: rgb(33, 35, 41);
+}
+
+.navbar-logo{
+    color: white;
+    font-family: 'Reenie Beanie', cursive;
+    justify-self: start;
+    margin: auto 20px;
+    text-decoration: none;
+    font-size: 1.5em;
+    font-weight: bold;
+}
+
+.navbar-items{
+    display: flex;
+    position: absolute;
+    align-items: center;
+    width: calc(150px + 5vw);
+    justify-content: space-between;
+    font-weight: 300;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.nav-link{
+    color: white;
+    text-decoration: none;
+    padding: 0.5rem 1rem
+}
+
+.nav-link:hover{
+    background-color: rgb(255,255,255, 0.1);
+    border-radius: 4px;
+    transition: all 0.2s ease-out;
+}
+
+.social-items{
+    display: flex;
+    height: 100%;
+    width: 175px;
+    flex-direction: row;
+    position: absolute;
+    right: 0;
+    margin-right: 20px;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 1.6rem;
+}
+
+.social-link{
+    color: white;
+    text-decoration: none;
+    padding: 0.5rem 1rem
+}
+
+.social-link:hover{
+    background-color: rgb(255,255,255, 0.1);
+    border-radius: 4px;
+    transition: all 0.2s ease-out;
+}
+
+.fa-bars{
+    color: white;
+}
+
+.fa-times{
+    color: white;
+}
+
+.fa-linkedin{
+    color: white;
+}
+
+.fa-instagram{
+    color: white;
+}
+
+.fa-envelope{
+    color: white;
+}
+
+.navbar-icon{
+    display: none;
+}
+
+@media screen and (max-width: 960px) {
+    .navbar-items{
+        background: rgb(33, 35, 41);
+        flex-direction: column;
+        width: 100%;
+        top: 80px;
+        left: -100%;
+        transition: all 0.3s ease;
+        transform: translate(0,0);
+    }
+
+    .navbar-items.active{
+        left: 0;
+        transition: all 0.5s ease;
+        z-index: 1;
+    }
+
+    .nav-link{
+        text-align: center;
+        height: 80px;
+        width:100%;
+        display: table;
+        line-height: 80px;
+        padding: 0;
+        border-bottom: solid;
+        border-width: 2px;
+        border-color: rgb(51,48,54, 1);
+    }
+
+    .nav-link:hover{
+        border-radius: 0;
+        background-color: rgb(255,255,255, 0.1);
+    }
+
+    .navbar-icon{
+        display: block;
+        position: absolute;
+        top: 0;
+        right: 0;
+        transform: translate(-100%, 100%);
+        font-size: 1.8rem;
+        cursor: pointer;
+    }
+
+    .social-items{
+        background: rgb(33, 35, 41);
+        width: 100%;
+        left: -100%;
+        top: 244px;
+        transition: all 0.3s ease;
+        justify-content: space-evenly;
+        border-bottom: solid;
+        border-width: 2px;
+        border-color: rgb(51,48,54, 1);
+    }
+
+    .social-items.active{
+        left: 0;
+        transition: all 0.5s ease;
+        z-index: 1;
+    }
+}

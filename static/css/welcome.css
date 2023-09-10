@@ -1,0 +1,94 @@
+.welcome{
+    position: relative;
+    height: calc(100vh - 80px);
+}
+
+.welcome-background{
+    background-image: url(/static/assets/images/background.jpg);
+    filter: blur(5px);
+    -webkit-filter: blur(5px);
+    background-position-y: 25%;
+    background-position-x: 100%; 
+    background-size: cover;
+    position: relative;
+    height: 98vh;
+    top: -80px;
+    margin-bottom: -80px;
+}
+
+.welcome-text-container{
+    position: relative;
+    height: 100vh;
+    width: 100vw;
+    top: -100vh;
+    margin-bottom: -100vh;
+}
+
+.welcome-text-block{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.welcome-text{
+    font-family: 'Source Code Pro', monospace;
+    font-size: calc(9px + 2.0vw);
+    color: rgb(220,220,230);
+}
+
+.welcome-text.big{
+    font-size: calc(12px + 3vw);
+}
+
+@keyframes blink {
+    0% {opacity: 1;}
+    40% {opacity: 1;}
+    60% {opacity: 0;}
+    100% {opacity: 0;}
+}
+
+.input-cursor {
+    display: inline-block;
+    width: calc(0.1*(9px + 2.0vw));
+    height: calc(9px + 2.0vw);
+    background-color: rgb(220,220,230);
+    margin-left: calc(0.1*(9px + 2.0vw));
+    animation: blink .6s linear infinite alternate;
+}
+
+.input-cursor.big {
+    height: calc(12px + 3vw);
+}
+
+#hello{
+    position: absolute;
+    left: calc(35% - 90px);
+    bottom: calc(70% - 50px);
+}
+
+#name{
+    position: absolute;
+    left: calc(35% - 90px + 2*(9px + 2.0vw));
+    bottom: calc(70% - 50px - 1.4*(9px + 2.0vw));
+}
+
+#welcome{
+    position: absolute;
+    left: calc(35% - 90px);
+    bottom: calc(70% - 50px - 1.4*(21px + 5.0vw));
+}
+
+#site{
+    position: absolute;
+    left: calc(35% - 90px + 2*(9px + 2.0vw));
+    bottom: calc(70% - 50px - 1.4*(30px + 7.0vw));
+}
+
+#gradient {
+    position: absolute;
+    left: 0;
+    top: 75%;
+    background-image: linear-gradient(180deg, rgb(19, 20, 23, 0.0) 0%, rgb(19, 20, 23, 1.0) 100%);
+    width: 100%;
+    height:25%;    
+}

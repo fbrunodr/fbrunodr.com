@@ -1,0 +1,7 @@
+1;Código Aula 1;https://fbrunodrbucket.s3.amazonaws.com/aula1-1.zip
+2;Código Aula 2;https://fbrunodrbucket.s3.amazonaws.com/aula2.zip
+3;Código Aula 3;https://fbrunodrbucket.s3.amazonaws.com/aula3.zip
+4;Código Aula 6;https://fbrunodrbucket.s3.amazonaws.com/aula6.zip
+5;Código Aula 7;https://fbrunodrbucket.s3.amazonaws.com/aula7.zip
+6;Código Aula 8;https://fbrunodrbucket.s3.amazonaws.com/aula8.zip
+7;Código Aula 14;https://fbrunodrbucket.s3.amazonaws.com/aula14.zip

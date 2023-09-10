@@ -1,0 +1,14 @@
+1;Input e Output;https://youtu.be/PyEnuymKeB0
+2;Estruturas de Dados I;https://youtu.be/xxf3-i8JndQ
+3;Estruturas de Dados II;https://youtu.be/rknZixJKZbA
+4;Estruturas de Dados III;https://youtu.be/VteQTjDD8v0
+5;Estruturas de Dados IV, parte 1;https://youtu.be/3uhqbAAYk84
+6;Estruturas de Dados IV, parte 2;https://youtu.be/OeEc75IsJzc
+7;Paradigmas de Programação I;https://youtu.be/u3Vh6DVtwdo
+8;Paradigmas de Programação II;https://youtu.be/5RhYPBmgn3g
+9;Paradigmas de Programação III;https://youtu.be/2z8Rf25lZFQ
+10;Grafos I;https://youtu.be/XGsijj40kmY
+11;Grafos II;https://youtu.be/bK3TM9JPf8I
+12;Grafos III;https://youtu.be/Jxn_cjNs3VY
+13;Grafos IV;https://youtu.be/dkI42PWMcf0
+14;Grafos V;https://youtu.be/zAtB0ABmEwU
