@@ -19,7 +19,12 @@ pub async fn render() -> Result<HttpResponse> {
                 {}
                 <link type=\"text/css\" rel=\"stylesheet\" href=\"/static/css/steganography.css\">
                 <div class=\"content\">
-                    Hide a message in your file below :) .
+                    <div class=\"intro\">
+                        <h2 class=\"title\"> What is <strong>Steganography</strong>? </h2>
+                        <p>
+                            Cool text here.
+                        </p>
+                    </div>
                     <label for=\"input-file\" id=\"drop-area\">
                         <input type=\"file\" accept=\"image/*\" id=\"input-file\" hidden>
                         <div id=\"img-view\">

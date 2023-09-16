@@ -1,13 +1,37 @@
+.content{
+    width: 100%;
+    font-size: small;
+    font-family: 'Source Code Pro', monospace;
+    color: azure;
+    line-height: 2em;
+}
+
+
+.title{
+    margin-top: calc(8px + .75vw);
+    margin-bottom: calc(8px + .75vw);
+    font-size: calc(1.5em + .75vw);
+}
+
+.intro{
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-top: 15px;
+    text-align: justify;
+	margin-bottom: 30px;
+}
+
 #drop-area{
 	display: block;
-	width: 80%;
+	width: 90%;
 	max-width: 400px;
 	margin-left: auto;
 	margin-right: auto;
-	padding: 30px;
-	background-color: #78a1f2;
+	padding: 25px;
+	background-color: #448bbd;
 	text-align: center;
 	border-radius: 20px;
+	color: black;
 }
 
 #img-view img{
@@ -24,5 +48,28 @@
 
 #img-view p{
 	font-size: calc(12px + 0.5vw); 
+}
+
+@media (min-width: 768px)
+{
+    .content{
+        width: 70%;
+        margin: auto;
+    }
+
+    .intro>p{
+        font-size: large;
+    }
+
+    .aula{
+        font-size: large;
+    }
+}
+
+@media (min-width: 1024px)
+{
+    .content{
+        width: 50%;
+    }
 }
 
