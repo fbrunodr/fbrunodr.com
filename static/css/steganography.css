@@ -1,0 +1,28 @@
+#drop-area{
+	display: block;
+	width: 80%;
+	max-width: 400px;
+	margin-left: auto;
+	margin-right: auto;
+	padding: 30px;
+	background-color: #78a1f2;
+	text-align: center;
+	border-radius: 20px;
+}
+
+#img-view img{
+	width: 100px;
+	margin-top: 15px;
+	margin-bottom: 15px;
+}
+
+#img-view span{
+	display: block;
+	font-size: 12px;
+	margin-top: 15px;
+}
+
+#img-view p{
+	font-size: calc(12px + 0.5vw); 
+}
+
