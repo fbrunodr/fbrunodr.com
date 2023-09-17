@@ -18,13 +18,28 @@ pub async fn render() -> Result<HttpResponse> {
             <body>
                 {}
                 <link type=\"text/css\" rel=\"stylesheet\" href=\"/static/css/steganography.css\">
+
                 <div class=\"content\">
+
                     <div class=\"intro\">
-                        <h2 class=\"title\"> What is <strong>Steganography</strong>? </h2>
+                        <h2 class=\"title\"> What is <span>Steganography</span>? </h2>
                         <p>
-                            Cool text here.
+                            Steganography is the practice of concealing one piece of information within another to hide
+                            its existence. It typically involves embedding secret data, such as text or images, within
+                            a seemingly innocuous carrier medium, like an image or audio file, in a way that is
+                            difficult to detect without specific knowledge or tools. Steganography is often used for
+                            covert communication or data protection, where the goal is to hide the presence of the
+                            hidden information rather than encrypting it.
+                        </p>
+                        <br>
+                        <p>
+                            Because we really really care about security here, this web page does both. Given a image,
+                            a message and a password we encrypt the message according to the password and hide the
+                            encrypted message inside the image. To read the hidden message inside the image, just
+                            upload the image that contains the hidden message and provide the password.
                         </p>
                     </div>
+
                     <label for=\"input-file\" id=\"drop-area\">
                         <input type=\"file\" accept=\"image/*\" id=\"input-file\" hidden>
                         <div id=\"img-view\">
@@ -33,6 +48,12 @@ pub async fn render() -> Result<HttpResponse> {
                             <span>Upload any images from desktop</span>
                         </div>
                     </label>
+
+                    <div class=\"message\">
+                        Hey
+                    </div>
+
+                <script type=\"text/javascript\" src=\"/static/js/steganography.js\"></script>
                 </div>
             </body>
         </html>

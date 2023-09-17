@@ -4,6 +4,7 @@
     font-family: 'Source Code Pro', monospace;
     color: azure;
     line-height: 2em;
+	margin-bottom: 25px;
 }
 
 
@@ -11,6 +12,10 @@
     margin-top: calc(8px + .75vw);
     margin-bottom: calc(8px + .75vw);
     font-size: calc(1.5em + .75vw);
+}
+
+.title span{
+	color: #5dfa5c;
 }
 
 .intro{
@@ -28,10 +33,15 @@
 	margin-left: auto;
 	margin-right: auto;
 	padding: 25px;
-	background-color: #448bbd;
+	background-color: #41789e;
 	text-align: center;
 	border-radius: 20px;
 	color: black;
+}
+
+#img-view{
+	background-position: center;
+	background-size: cover;
 }
 
 #img-view img{
