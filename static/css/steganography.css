@@ -14,8 +14,11 @@
     font-size: calc(1.5em + .75vw);
 }
 
-.title span{
-	color: #5dfa5c;
+
+.smallTitle{
+    margin-top: calc(8px + .75vw);
+    margin-bottom: calc(8px + .75vw);
+    font-size: calc(1.1em + .75vw);
 }
 
 .intro{
@@ -24,6 +27,10 @@
     padding-top: 15px;
     text-align: justify;
 	margin-bottom: 30px;
+}
+
+a{
+    text-decoration: none;
 }
 
 #drop-area{
@@ -41,7 +48,8 @@
 
 #img-view{
 	background-position: center;
-	background-size: cover;
+    background-size: contain;
+    background-repeat: no-repeat;
 }
 
 #img-view img{
@@ -67,7 +75,7 @@
         margin: auto;
     }
 
-    .intro>p{
+    .intro{
         font-size: large;
     }
 

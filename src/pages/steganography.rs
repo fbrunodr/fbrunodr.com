@@ -22,7 +22,7 @@ pub async fn render() -> Result<HttpResponse> {
                 <div class=\"content\">
 
                     <div class=\"intro\">
-                        <h2 class=\"title\"> What is <span>Steganography</span>? </h2>
+                        <h2 class=\"title\"> What is <a href=\"https://en.wikipedia.org/wiki/Steganography\"><span style=\"color: #5dfa5c;\">Steganography</span></a>? </h2>
                         <p>
                             Steganography is the practice of concealing one piece of information within another to hide
                             its existence. It typically involves embedding secret data, such as text or images, within
@@ -31,12 +31,41 @@ pub async fn render() -> Result<HttpResponse> {
                             covert communication or data protection, where the goal is to hide the presence of the
                             hidden information rather than encrypting it.
                         </p>
-                        <br>
+                        <h3 class =\"smallTitle\"> How this page work? </h3>
                         <p>
-                            Because we really really care about security here, this web page does both. Given a image,
-                            a message and a password we encrypt the message according to the password and hide the
-                            encrypted message inside the image. To read the hidden message inside the image, just
-                            upload the image that contains the hidden message and provide the password.
+                            Because we really really care about security here, this web page does both steganography
+                            and encryption. Given a image, a message and a password we encrypt the message according
+                            to the password and hide the encrypted message inside the image. To read the hidden
+                            message inside the image, just upload the image that contains the hidden message and
+                            provide the password used to encrypt it.
+                        </p>
+                        <br/>
+                        <p>
+                            The encryption algorithm we use is the <a href=\"https://en.wikipedia.org/wiki/Advanced_Encryption_Standard\">
+                            <span style=\"color:#5ce0ff;\">Advanced Encryption Standard (AES)</span></a>. After
+                            encryption, we then break the encrypted message into its bits (yes, bits not bytes). Then
+                            we hide each bit in the least significant bit of the color channels of the image. For
+                            example, if the first bit is 0, we turn off the last bit of the top-left red pixel. If
+                            its value is 127, it becomes 126. If it is 52, it remains as 52 (least significant bit is
+                            already off). This way the image remains unchanged to the naked eye. <a href=\"https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/putImageData#data_loss_due_to_browser_optimization\">
+                            <span style=\"color: #c34412;\"> Due to the lossy nature of converting to and from premultiplied
+                            alpha color values </span> </a> we only use pixels with alpha value equal to 255, as
+                            <a href=\"/static/js/minimumAlpha.js\"> <span style=\"color: #c06bff\"> all other values may lead to loss of data</span></a>.
+                            Of course we could send your image, message and password to the site's server, do all the
+                            processing outside of the web browser (where we wouldn't have to deal with this bs) and
+                            then return your desired image back. We don't do that because of the following:
+                        </p>
+                        <ol>
+                            <br/>
+                            <li> By doing everything client-side you don't have to trust me that I am not saving your
+                            message, password (which you probably use elsewhere, dumbass) and images in my server. </li>
+                            <br/>
+                            <li> I don't want to waste my server storage, processing time and bandwith with your data,
+                            sorry. </li>
+                        </ol>
+                        <br/>
+                        <p>
+                            Anyway, feel free to enjoy this code I provided you:
                         </p>
                     </div>
 

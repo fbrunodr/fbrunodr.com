@@ -56,53 +56,39 @@ function decryptMessage(ciphertext, password) {
 
 
 function stringToBits(inputString) {
-  // Initialize an empty array to store the bits
-  const bits = [];
+	const bits = [];
 
-  // Iterate through each character in the input string
-  for (let i = 0; i < inputString.length; i++) {
-    // Get the character code of the current character
-    const charCode = inputString.charCodeAt(i);
+	for (let i = 0; i < inputString.length; i++) {
+		const charCode = inputString.charCodeAt(i);
 
-    // Convert the character code to its binary representation (8 bits)
-    const binaryString = charCode.toString(2);
+		// Convert the character code to its binary representation (8 bits)
+		const binaryString = charCode.toString(2);
+		const paddedBinary = binaryString.padStart(8, '0');
 
-    // Pad the binary representation to ensure it's 8 bits long
-    const paddedBinary = binaryString.padStart(8, '0');
+		for (let j = 0; j < paddedBinary.length; j++) {
+			bits.push(parseInt(paddedBinary[j]));
+		}
+	}
 
-    // Split the padded binary string into individual bits and add them to the bits array
-    for (let j = 0; j < paddedBinary.length; j++) {
-      bits.push(parseInt(paddedBinary[j]));
-    }
-  }
-
-  return bits;
+	return bits;
 }
 
 
 function bitsToString(bitsArray) {
-  // Ensure the input array has a multiple of 8 bits (8 bits make 1 byte)
-  if (bitsArray.length % 8 !== 0) {
-    throw new Error("Input does not have a valid binary representation");
-  }
+	if (bitsArray.length % 8 !== 0) {
+		throw new Error("Input does not have a valid binary representation");
+	}
 
-  // Initialize an empty string to store the reconstructed string
-  let reconstructedString = "";
+	let reconstructedString = "";
 
-  // Process the binary array in 8-bit chunks
-  for (let i = 0; i < bitsArray.length; i += 8) {
-    // Extract the next 8 bits
-    const byteBits = bitsArray.slice(i, i + 8);
+	for (let i = 0; i < bitsArray.length; i += 8) {
+		const byteBits = bitsArray.slice(i, i + 8);
+		const decimalValue = parseInt(byteBits.join(""), 2);
+		const char = String.fromCharCode(decimalValue);
+		reconstructedString += char;
+	}
 
-    // Convert the binary bits to a decimal value
-    const decimalValue = parseInt(byteBits.join(""), 2);
-
-    // Convert the decimal value to a character and add it to the string
-    const char = String.fromCharCode(decimalValue);
-    reconstructedString += char;
-  }
-
-  return reconstructedString;
+	return reconstructedString;
 }
 
 
@@ -127,13 +113,25 @@ function embedMessageInImage() {
 		const ciphertext = encryptMessage(message, password);
 		const ciphertextBits = stringToBits(ciphertext + '\0');
 
-		for(let i = 0, j = 0; i < ciphertextBits.length; i++, j++){
-			if(j % 4 == 3)
+		let i = 0, j = 0;
+
+		while(j < ciphertextBits.length){
+			if(i >= data.length){
+				alert("Image does not have enough opaque pixels");
+				return;
+			}
+
+			if(i % 4 == 0 && data[i + 3] != 255)
+				i += 4;
+			else if(i % 4 == 3)
+				i++;
+			else{
+				data[i] = (data[i] & ~1) | ciphertextBits[j];
+				i++;
 				j++;
-			data[j] = (data[j] & 254) | ciphertextBits[i];
+			}
 		}
 
-		imageData.data = data;
 		ctx.putImageData(imageData, 0, 0);
 		const downloadLink = document.createElement('a');
 		downloadLink.href = canvas.toDataURL();
@@ -167,18 +165,22 @@ function extractMessageFromImage() {
 		let i = 0;
 		let zerosInRow = 0;
 
-		while(zerosInRow != 8){
-			if(i % 4 == 3)
+		while(!(bits.length % 8 == 0 && zerosInRow >= 8)){
+			if(i % 4 == 0 && data[i+3] != 255)
+				i += 4;
+			else if(i % 4 == 3)
 				i++;
-			const bit = data[i] & 1;
-			bits.push(bit);
-			if(bit)
-				zerosInRow = 0;
-			else
-				zerosInRow++;
-			i++;
+			else{
+				const bit = data[i] & 1;
+				bits.push(bit);
+				if(bit)
+					zerosInRow = 0;
+				else
+					zerosInRow++;
+				i++;
+			}
 		}
-		
+
 		canvas.remove();
 		const encryptedMessage = bitsToString(bits).slice(0,-1);
 		const message = decryptMessage(encryptedMessage, password);
@@ -186,4 +188,3 @@ function extractMessageFromImage() {
 		return message;
 	}
 }
-
