@@ -118,6 +118,7 @@ function embedMessageInImage() {
 		while(j < ciphertextBits.length){
 			if(i >= data.length){
 				alert("Image does not have enough opaque pixels");
+				canvas.remove();
 				return;
 			}
 
