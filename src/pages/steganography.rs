@@ -13,7 +13,7 @@ pub async fn render() -> Result<HttpResponse> {
                 <link rel=\"preconnect\" href=\"https://fonts.googleapis.com\">
                 <link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin>
                 <link href=\"https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400&family=Reenie+Beanie&family=Source+Code+Pro&display=swap\" rel=\"stylesheet\">
-                <script type=\"text/javascript\" src=\"/static/js/colors.js\"></script>
+                <script src=\"https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js\"></script> 
             <head/>
             <body>
                 {}
@@ -49,8 +49,8 @@ pub async fn render() -> Result<HttpResponse> {
                         </div>
                     </label>
 
-                    <div class=\"message\">
-                        Hey
+                    <div class=\"encrypt-decrypt\">
+                        <button id=\"encrypt-decrypt-button\">Encrypt</button>
                     </div>
 
                 <script type=\"text/javascript\" src=\"/static/js/steganography.js\"></script>
