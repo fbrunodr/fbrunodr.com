@@ -18,7 +18,9 @@ fn get_skill_color(skill: &String) -> String {
         "Algorithms" | "Object Tracking" => String::from("\"color: #c71212;\""),
         "Quantum Computing" => String::from("\"color: #00B0F0;\""),
         "Deep Neural Network" => String::from("\"color: #2fbdbf;\""),
-        _ => String::from("\"color: 'red';\""),
+        "Security" => String::from("\"color: #af46d1\""),
+        "Encryption" => String::from("\"color: #28bb34\""),
+        _ => String::from("\"color: red;\""),
     }
 }
 
