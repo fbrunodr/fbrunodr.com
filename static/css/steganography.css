@@ -129,19 +129,17 @@ a{
         margin: auto;
 		margin-bottom: 25px;
 		font-size: large;
+		font-size: large;
+		margin-bottom: 40px;
     }
 
 	.item>input{
 		font-size: large;
 	}
 
-	.content{
-		font-size: large;
-		margin-bottom: 40px;
-	}
-
 	.button{
 		padding: 10px;
+		font-size: medium;
 	}
 }
 
