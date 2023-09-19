@@ -86,7 +86,7 @@ function embedMessageInImage() {
 	const message = document.getElementById("message-field").value;
 	const password = document.getElementById("password-field").value;
 
-	if(!(imgLink && message && password)){
+	if(!(imgLink && message)){
 		return;
 	}
 	img = new Image();
@@ -100,7 +100,10 @@ function embedMessageInImage() {
 		const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
 		let data = imageData.data;
 
-		const ciphertext = encryptMessage(message, password);
+		let ciphertext = message;
+		if(password){
+			ciphertext = encryptMessage(message, password);
+		}
 		const ciphertextBits = stringToBits(ciphertext + '\0');
 
 		let i = 0, j = 0;
@@ -138,7 +141,7 @@ function embedMessageInImage() {
 function extractMessageFromImage() {
 	const password = document.getElementById("password-field").value;
 
-	if(!(imgLink && password)){
+	if(!(imgLink)){
 		return;
 	}
 	img = new Image();
@@ -157,6 +160,9 @@ function extractMessageFromImage() {
 		let zerosInRow = 0;
 
 		while(!(bits.length % 8 == 0 && zerosInRow >= 8)){
+			if(i >= data.length){
+				break;
+			}
 			if(i % 4 == 0 && data[i+3] != 255)
 				i += 4;
 			else if(i % 4 == 3)
@@ -174,7 +180,10 @@ function extractMessageFromImage() {
 
 		canvas.remove();
 		const encryptedMessage = bitsToString(bits).slice(0,-1);
-		const message = decryptMessage(encryptedMessage, password);
+		let message = encryptedMessage;
+		if(password){
+			message = decryptMessage(encryptedMessage, password);
+		}
 		alert(message);
 		return message;
 	}
@@ -183,11 +192,11 @@ function extractMessageFromImage() {
 function encrypt_decrypt_handler(){
 	if(state){
 		document.getElementById("encrypt-decrypt").innerHTML = `
-			<form onsubmit="return embedMessageInImage()">
+			<form onsubmit="event.preventDefault(); return embedMessageInImage()">
 				<label for="message-field">Message</label>
 				<input type="text" id="message-field" name="message-field"><br><br>
 				<label for="password-field">Password:</label>
-				<input type="text" id="password-field" name="password-field"><br><br>
+				<input type="password" id="password-field" name="password-field"><br><br>
 				<input type="submit" value="Encrypt">
 			</form>
 		`;
@@ -196,9 +205,9 @@ function encrypt_decrypt_handler(){
 	}
 	else{
 		document.getElementById("encrypt-decrypt").innerHTML = `
-			<form onsubmit="return extractMessageFromImage()">
+			<form onsubmit="event.preventDefault(); return extractMessageFromImage()">
 				<label for="password-field">Password:</label>
-				<input type="text" id="password-field" name="password-field"><br><br>
+				<input type="password" id="password-field" name="password-field"><br><br>
 				<input type="submit" value="Decrypt">
 			</form>
 		`;
