@@ -1,22 +1,12 @@
 const dropArea = document.getElementById("drop-area");
 const inputFile = document.getElementById("input-file");
 const imageView = document.getElementById("img-view");
-const button = document.getElementById("encrypt-decrypt-button");
 
-let state = 0;
+let state = 1;
 let imageViewHeight = 0;
 let imgLink;
 
 inputFile.addEventListener("change", uploadImage);
-button.addEventListener("click", function(){
-	if(state){
-		extractMessageFromImage();
-	}
-	else{
-		embedMessageInImage();
-	}
-});
-
 
 function uploadImage(){
 	if(imageViewHeight === 0){
@@ -93,10 +83,10 @@ function bitsToString(bitsArray) {
 
 
 function embedMessageInImage() {
-	const message = 'Hello World';
-	const password = '123';
+	const message = document.getElementById("message-field").value;
+	const password = document.getElementById("password-field").value;
 
-	if(!imgLink){
+	if(!(imgLink && message && password)){
 		return;
 	}
 	img = new Image();
@@ -146,9 +136,9 @@ function embedMessageInImage() {
 
 
 function extractMessageFromImage() {
-    let password = '123';
+	const password = document.getElementById("password-field").value;
 
-	if(!imgLink){
+	if(!(imgLink && password)){
 		return;
 	}
 	img = new Image();
@@ -185,7 +175,35 @@ function extractMessageFromImage() {
 		canvas.remove();
 		const encryptedMessage = bitsToString(bits).slice(0,-1);
 		const message = decryptMessage(encryptedMessage, password);
-		console.log(message);
+		alert(message);
 		return message;
 	}
 }
+
+function encrypt_decrypt_handler(){
+	if(state){
+		document.getElementById("encrypt-decrypt").innerHTML = `
+			<form onsubmit="return embedMessageInImage()">
+				<label for="message-field">Message</label>
+				<input type="text" id="message-field" name="message-field"><br><br>
+				<label for="password-field">Password:</label>
+				<input type="text" id="password-field" name="password-field"><br><br>
+				<input type="submit" value="Encrypt">
+			</form>
+		`;
+		document.getElementById("encrypt-switch").style = "color: black; background-color: #c71c63";
+		document.getElementById("decrypt-switch").style = "color: #c71c63; background-color: #36384c";
+	}
+	else{
+		document.getElementById("encrypt-decrypt").innerHTML = `
+			<form onsubmit="return extractMessageFromImage()">
+				<label for="password-field">Password:</label>
+				<input type="text" id="password-field" name="password-field"><br><br>
+				<input type="submit" value="Decrypt">
+			</form>
+		`;
+		document.getElementById("encrypt-switch").style = "color: #c71c63; background-color: #36384c";
+		document.getElementById("decrypt-switch").style = "color: black; background-color: #c71c63";
+	}
+}
+

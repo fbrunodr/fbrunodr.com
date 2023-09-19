@@ -58,14 +58,15 @@ pub async fn render() -> Result<HttpResponse> {
                         <ol>
                             <br/>
                             <li> By doing everything client-side you don't have to trust me that I am not saving your
-                            message, password (which you probably use elsewhere, dumbass) and images in my server. </li>
+                            message, password (which you probably use elsewhere, dumbass) and image in my server. </li>
                             <br/>
                             <li> I don't want to waste my server storage, processing time and bandwith with your data,
                             sorry. </li>
                         </ol>
                         <br/>
                         <p>
-                            Anyway, feel free to enjoy this code I provided you:
+                            If you don't care about encryption and just wanna hide the message inside the image file
+                            just leave the password field empty. Enjoy this code I provided you:
                         </p>
                     </div>
 
@@ -78,17 +79,25 @@ pub async fn render() -> Result<HttpResponse> {
                         </div>
                     </label>
 
-                    <div class=\"encrypt-decrypt\">
-                        <button id=\"encrypt-decrypt-button\">Encrypt</button>
+                    <div id=\"encrypt-decrypt-switch\">
+                        <div id=\"encrypt-switch\" class=\"switch\" onClick=\"state=1; encrypt_decrypt_handler();\">Encrypt mode</div>
+                        <div id=\"decrypt-switch\" class=\"switch\" onClick=\"state=0; encrypt_decrypt_handler();\">Decrypt mode</div>
                     </div>
 
-                <script type=\"text/javascript\" src=\"/static/js/steganography.js\"></script>
+                    <div id=\"encrypt-decrypt\">
+                        Something
+                    </div>
+
+                    <script type=\"text/javascript\" src=\"/static/js/steganography.js\"></script>
+                    <script type=\"text/javascript\">
+                        encrypt_decrypt_handler()
+                    </script>
                 </div>
             </body>
         </html>
     ", navbar());
- 
-   Ok(HttpResponse::Ok()
+
+    Ok(HttpResponse::Ok()
         .content_type("text/html")
         .body(html_content)) 
 }

@@ -3,8 +3,8 @@
     font-size: small;
     font-family: 'Source Code Pro', monospace;
     color: azure;
-    line-height: 2em;
-	margin-bottom: 25px;
+    line-height: 1.5em;
+	margin-bottom: 30px;
 }
 
 
@@ -68,19 +68,27 @@ a{
 	font-size: calc(12px + 0.5vw); 
 }
 
+#encrypt-decrypt-switch {
+	display: flex;
+    justify-content: center;
+	margin-top: 25px;
+	margin-bottom: 25px;
+}
+
+.switch{
+	margin-left: 15px;
+	margin-right: 15px;
+	padding: 15px;
+	border-radius: 10px;
+}
+
 @media (min-width: 768px)
 {
     .content{
         width: 70%;
         margin: auto;
-    }
-
-    .intro{
-        font-size: large;
-    }
-
-    .aula{
-        font-size: large;
+		margin-bottom: 25px;
+		font-size: large;
     }
 }
 
