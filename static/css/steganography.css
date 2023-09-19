@@ -1,3 +1,10 @@
+#background{
+	position: fixed;
+	top: 0;
+	left: 0;
+	z-index: -1;
+}
+
 .content{
     width: 100%;
     font-size: small;
@@ -71,8 +78,8 @@ a{
 #encrypt-decrypt-switch {
 	display: flex;
     justify-content: center;
-	margin-top: 25px;
-	margin-bottom: 25px;
+	margin-top: 40px;
+	margin-bottom: 30px;
 }
 
 .switch{
@@ -80,6 +87,39 @@ a{
 	margin-right: 15px;
 	padding: 15px;
 	border-radius: 10px;
+}
+
+.button{
+	padding: 5px;
+	border-radius: 15px;
+	background-color: #439fdf;
+    font-size: small;
+    font-family: 'Source Code Pro', monospace;
+	border: none;
+	margin: auto;
+	margin-top: 5px;
+}
+
+.button:active{
+	color: white;
+	background-color: #1c4b6c;
+}
+
+.item{
+	margin: auto;
+	margin-bottom: 15px;
+}
+
+.item>input{
+	border-radius: 10px;
+	border: none;
+	font-size: small;
+	padding-left: 10px;
+}
+
+#data-form{
+	display: flex;
+	flex-direction: column;
 }
 
 @media (min-width: 768px)
@@ -90,12 +130,26 @@ a{
 		margin-bottom: 25px;
 		font-size: large;
     }
+
+	.item>input{
+		font-size: large;
+	}
+
+	.content{
+		font-size: large;
+		margin-bottom: 40px;
+	}
+
+	.button{
+		padding: 10px;
+	}
 }
 
 @media (min-width: 1024px)
 {
     .content{
         width: 50%;
+		margin-bottom: 50px;
     }
 }
 

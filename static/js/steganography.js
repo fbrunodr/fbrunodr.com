@@ -86,9 +86,15 @@ function embedMessageInImage() {
 	const message = document.getElementById("message-field").value;
 	const password = document.getElementById("password-field").value;
 
-	if(!(imgLink && message)){
+	if(!imgLink){
+		alert("Upload image to proceed");
 		return;
 	}
+
+	if(!message){
+		return;
+	}
+
 	img = new Image();
 	img.src = imgLink;
 	img.onload = () => {
@@ -141,9 +147,11 @@ function embedMessageInImage() {
 function extractMessageFromImage() {
 	const password = document.getElementById("password-field").value;
 
-	if(!(imgLink)){
+	if(!imgLink){
+		alert("Upload image to proceed");
 		return;
 	}
+
 	img = new Image();
 	img.src = imgLink;
 	img.onload = () => {
@@ -192,12 +200,17 @@ function extractMessageFromImage() {
 function encrypt_decrypt_handler(){
 	if(state){
 		document.getElementById("encrypt-decrypt").innerHTML = `
-			<form onsubmit="event.preventDefault(); return embedMessageInImage()">
-				<label for="message-field">Message</label>
-				<input type="text" id="message-field" name="message-field"><br><br>
-				<label for="password-field">Password:</label>
-				<input type="password" id="password-field" name="password-field"><br><br>
-				<input type="submit" value="Encrypt">
+			<form id=\"data-form\" onsubmit="event.preventDefault(); return embedMessageInImage()">
+				<div class=\"item\">
+					<label for="message-field">Message*:</label>
+					<input type="text" id="message-field" name="message-field" required>
+				</div>
+				<div class=\"item\">
+					<label for="password-field">Password:</label>
+					<input type="password" id="password-field" name="password-field">
+					<br>
+				</div>
+				<input class=\"button\" type="submit" value="Encrypt">
 			</form>
 		`;
 		document.getElementById("encrypt-switch").style = "color: black; background-color: #c71c63";
@@ -205,10 +218,12 @@ function encrypt_decrypt_handler(){
 	}
 	else{
 		document.getElementById("encrypt-decrypt").innerHTML = `
-			<form onsubmit="event.preventDefault(); return extractMessageFromImage()">
-				<label for="password-field">Password:</label>
-				<input type="password" id="password-field" name="password-field"><br><br>
-				<input type="submit" value="Decrypt">
+			<form id=\"data-form\" onsubmit="event.preventDefault(); return extractMessageFromImage()">
+				<div class=\"item\">
+					<label for="password-field">Password:</label>
+					<input type="password" id="password-field" name="password-field">
+				</div>
+				<input class=\"button\" type="submit" value="Decrypt">
 			</form>
 		`;
 		document.getElementById("encrypt-switch").style = "color: #c71c63; background-color: #36384c";

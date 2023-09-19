@@ -16,7 +16,13 @@ pub async fn render() -> Result<HttpResponse> {
                 <script src=\"https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js\"></script> 
             <head/>
             <body>
+                <canvas id=\"background\">
+                </canvas>
+
+               <script type=\"text/javascript\" src=\"/static/js/matrix_background.js\"></script>
+
                 {}
+
                 <link type=\"text/css\" rel=\"stylesheet\" href=\"/static/css/steganography.css\">
 
                 <div class=\"content\">
