@@ -89,6 +89,10 @@ a{
 	border-radius: 10px;
 }
 
+.switch:hover{
+	cursor: pointer;
+}
+
 .button{
 	padding: 5px;
 	border-radius: 15px;
