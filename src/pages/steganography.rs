@@ -86,8 +86,8 @@ pub async fn render() -> Result<HttpResponse> {
                     </label>
 
                     <div id=\"encrypt-decrypt-switch\">
-                        <div id=\"encrypt-switch\" class=\"switch\" onClick=\"state=1; encrypt_decrypt_handler();\">Encrypt mode</div>
-                        <div id=\"decrypt-switch\" class=\"switch\" onClick=\"state=0; encrypt_decrypt_handler();\">Decrypt mode</div>
+                        <div id=\"encrypt-switch\" class=\"switch\" onClick=\"set_encrypt_mode();\">Encrypt mode</div>
+                        <div id=\"decrypt-switch\" class=\"switch\" onClick=\"set_decrypt_mode();\">Decrypt mode</div>
                     </div>
 
                     <div id=\"encrypt-decrypt\">
@@ -96,7 +96,7 @@ pub async fn render() -> Result<HttpResponse> {
 
                     <script type=\"text/javascript\" src=\"/static/js/steganography.js\"></script>
                     <script type=\"text/javascript\">
-                        encrypt_decrypt_handler()
+                        set_encrypt_mode()
                     </script>
                 </div>
             </body>
