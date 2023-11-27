@@ -3,7 +3,7 @@ const backgroundCanvas = document.getElementById('background');
 const backgroundCtx = backgroundCanvas.getContext('2d');
 
 // set the width and height of the canvas
-const w = backgroundCanvas.width = 3000;
+const w = backgroundCanvas.width = 4000;
 const h = backgroundCanvas.height = 3000;
 
 // draw a black rectangle of width and height same as that of the canvas
