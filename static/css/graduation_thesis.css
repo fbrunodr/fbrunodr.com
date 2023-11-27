@@ -1,0 +1,103 @@
+#background{
+	position: fixed;
+	top: 0;
+	left: 0;
+    opacity: 0.4;
+	z-index: -1;
+    width: 100vw;
+    height: 100vh;
+    background-image: url('/static/assets/images/Jupiter.jpg');
+    background-attachment: fixed;
+    background-size: cover;
+    background-position: center;
+}
+
+.content{
+    position: fixed;
+    width: 100vw;
+    height: 100vh;
+    top: 0;
+    left: 0;
+    overflow: hidden;
+}
+
+.scroll::before{
+    content: "";
+    display: block;
+    height: 100vh;
+}
+
+.scroll::after{
+    content: "";
+    display: block;
+    height: 100vh;
+}
+
+.scroll{
+    margin: auto;
+    height: 100vh;
+    overflow: scroll;
+    scrollbar-width: none;
+    font-size: medium;
+    text-align: justify;
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow';
+    color: azure;
+    line-height: 2em;
+}
+
+.scroll h2{
+    margin-bottom: calc(8px + .75vw);
+    font-size: calc(1.5em + .75vw);
+}
+
+.scroll h1{
+    font-size: large;
+    font-weight: bolder;
+    display: block;
+    margin: 15px;
+    color: burlywood;
+}
+
+.scroll p{
+    margin: 5px 0 5px 0;
+}
+
+.scroll a{
+    color: #b1ccff;
+    text-decoration: none;
+}
+
+.resource {
+    display: block;
+    margin: 15px;
+}
+
+.scroll img{
+    width: 100%;
+    margin: 15px 0 15px 0;
+}
+
+.code {
+    background-color: black;
+    color: green;
+    font-family: 'Source Code Pro', monospace;
+}
+
+@media (min-width: 768px)
+{
+    .scroll{
+        margin: auto;
+    }
+
+    .scroll p{
+        font-size: larger;
+    }
+
+    .scroll a{
+        font-size: larger;
+    }
+
+    .scroll h1{
+        font-size: xx-large;
+    }
+}
