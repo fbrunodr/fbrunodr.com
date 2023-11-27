@@ -104,8 +104,11 @@ pub async fn render() -> Result<HttpResponse> {
                             conservation in interplanetary travel.
                         </p> 
 
+                        <p id=\"empty\">
+                        </p>
+
                         <p>
-                            Yes, this text was generated using chatgpt, ur welcome...
+                            Yes, this text was generated using chatgpt...
                         </p>
                     </div>
                 </div>

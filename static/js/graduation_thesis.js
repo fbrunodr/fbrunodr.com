@@ -3,7 +3,7 @@ function handleResize() {
 
     const p = 300;
     const h = window.innerHeight;
-    const alpha = 15 * Math.PI / 180;
+    const alpha = 17 * Math.PI / 180;
     const theta = 2 * Math.atan2(h / 2, p);
 
     const k = Math.cos(theta / 2 + alpha) / Math.cos(theta / 2);

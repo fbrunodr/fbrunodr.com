@@ -28,12 +28,16 @@ html {
 .scroll::before{
     content: "";
     display: block;
-    height: 75vh;
+    height: 90vh;
 }
 
 .scroll::after{
     content: "";
     display: block;
+    height: 100vh;
+}
+
+#empty{
     height: 100vh;
 }
 
@@ -45,7 +49,7 @@ html {
     scrollbar-width: none;
     -ms-overflow-style: none;  /* Internet Explorer 10+ */
     font-size: medium;
-    text-align: justify;
+    text-align: center;
     font-family: 'Franklin Gothic Medium', 'Arial Narrow';
     color: azure;
     line-height: 2em;
@@ -99,11 +103,7 @@ html {
         margin: auto;
     }
 
-    .scroll p{
-        font-size: larger;
-    }
-
-    .scroll a{
+    .scroll p a{
         font-size: larger;
     }
 
