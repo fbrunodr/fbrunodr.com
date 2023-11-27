@@ -15,10 +15,10 @@ pub async fn render() -> Result<HttpResponse> {
                 <link href=\"https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400&family=Reenie+Beanie&family=Source+Code+Pro&display=swap\" rel=\"stylesheet\">
             <head/>
             <body>
+                {}
+
                 <canvas id=\"background\">
                 </canvas>
-
-                {}
 
                 <link type=\"text/css\" rel=\"stylesheet\" href=\"/static/css/graduation_thesis.css\">
 
@@ -63,7 +63,7 @@ pub async fn render() -> Result<HttpResponse> {
                         <h1>
                             Genetic algorithms stand superior in their class. Simulated Annealing performs admirably,
                             shall the user not mind it occasionally falter in the traps of local minima. The remaining
-                            algorithms, unfortunately, showed a disappointing performance in solving the optimization
+                            algorithms showed a disappointing performance in solving the optimization
                             problems presented.
                         </h1>
 

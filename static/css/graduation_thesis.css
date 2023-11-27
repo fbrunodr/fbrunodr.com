@@ -1,3 +1,7 @@
+html {
+    overflow: hidden;
+}
+
 #background{
 	position: fixed;
 	top: 0;
@@ -24,7 +28,7 @@
 .scroll::before{
     content: "";
     display: block;
-    height: 100vh;
+    height: 75vh;
 }
 
 .scroll::after{
@@ -39,11 +43,16 @@
     overflow: scroll;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
+    -ms-overflow-style: none;  /* Internet Explorer 10+ */
     font-size: medium;
     text-align: justify;
     font-family: 'Franklin Gothic Medium', 'Arial Narrow';
     color: azure;
     line-height: 2em;
+}
+
+.scroll::-webkit-scrollbar {
+    display: none;
 }
 
 .scroll h2{
@@ -52,7 +61,7 @@
 }
 
 .scroll h1{
-    font-size: large;
+    font-size: medium;
     font-weight: bolder;
     display: block;
     margin: 15px;
