@@ -36,4 +36,4 @@ function scrollContent() {
     scrollable.scrollTop += 1;
 }
 
-setInterval(scrollContent, 50);
+setInterval(scrollContent, 1000 / 30);
