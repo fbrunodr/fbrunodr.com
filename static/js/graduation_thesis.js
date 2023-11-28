@@ -33,7 +33,7 @@ handleResize();
 // Function to continuously scroll the content
 function scrollContent() {
     const scrollable = document.querySelector('.scroll');
-    scrollable.scrollTop += 3;
+    scrollable.scrollTop += 1;
 }
 
-setInterval(scrollContent, 200);
+setInterval(scrollContent, 50);
