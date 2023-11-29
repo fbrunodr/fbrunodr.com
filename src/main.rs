@@ -8,6 +8,7 @@ use pages::home;
 use pages::competitive_programming_classes;
 use pages::steganography;
 use pages::graduation_thesis;
+use pages::who_chat;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -18,6 +19,9 @@ async fn main() -> std::io::Result<()> {
             .service(competitive_programming_classes::render)
             .service(steganography::render)
             .service(graduation_thesis::render)
+            .service(who_chat::post_chat)
+            .service(who_chat::get_chat)
+            .service(who_chat::render)
     })
     .bind(("127.0.0.1", 8080))?
     .run()
