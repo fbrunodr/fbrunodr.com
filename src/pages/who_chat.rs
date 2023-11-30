@@ -1,5 +1,5 @@
 use std::fs::{File, self};
-use std::io::{Write, Read, self};
+use std::io::{Write, Read};
 use std::path::Path;
 use actix_web::{get, post, web, HttpResponse, Responder, Result};
 use serde::Deserialize;
@@ -26,6 +26,88 @@ struct ChatPost {
 }
 
 
+trait Credentials {
+    fn name(&self) -> &String;
+    fn password(&self) -> &String;
+}
+
+
+impl Credentials for ChatAccess {
+    fn name(&self) -> &String {
+        &self.name
+    }
+
+    fn password(&self) -> &String {
+        &self.password
+    }
+}
+
+
+impl Credentials for ChatPost {
+    fn name(&self) -> &String {
+        &self.name
+    }
+
+    fn password(&self) -> &String {
+        &self.password
+    }
+}
+
+
+enum WhoChatError {
+    WrongPassword,
+    ChatNotFound,
+    InternalServerError,
+    DataCorruptionError,
+    InvalidName,
+    EmptyPassword,
+    EmptyContent,
+}
+
+
+impl std::fmt::Display for WhoChatError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            WhoChatError::WrongPassword => write!(f, "wrong password"),
+            WhoChatError::ChatNotFound => write!(f, "chat not found"),
+            WhoChatError::InternalServerError => write!(f, "internal server error"),
+            WhoChatError::DataCorruptionError => write!(f, "data corruption"),
+            WhoChatError::InvalidName => write!(f, "invalid name"),
+            WhoChatError::EmptyPassword => write!(f, "empty password"),
+            WhoChatError::EmptyContent => write!(f, "empty content"),
+        }
+    }
+}
+
+
+impl std::convert::From<age::EncryptError> for WhoChatError {
+    fn from(_v: age::EncryptError) -> Self {
+        WhoChatError::InternalServerError
+    }
+}
+
+
+impl std::convert::From<age::DecryptError> for WhoChatError {
+    fn from(_v: age::DecryptError) -> Self {
+        WhoChatError::WrongPassword
+    }
+}
+
+
+impl std::convert::From<std::io::Error> for WhoChatError {
+    fn from(_v: std::io::Error) -> Self {
+        WhoChatError::InternalServerError
+    }
+}
+
+
+impl std::convert::From<std::string::FromUtf8Error> for WhoChatError {
+    fn from(_v: std::string::FromUtf8Error) -> Self {
+        WhoChatError::DataCorruptionError
+    }
+}
+
+
 fn generate_salt(length: usize) -> String {
     rand::thread_rng()
         .sample_iter(&Alphanumeric)
@@ -35,7 +117,7 @@ fn generate_salt(length: usize) -> String {
 }
 
 
-fn encrypt(content: &String, password: &String, salt: &String) -> Result<Vec<u8>, age::EncryptError> {
+fn encrypt(content: &String, password: &String, salt: &String) -> Result<Vec<u8>, WhoChatError> {
     let key = format!("{}{}",&password,&salt);
     let encryptor = age::Encryptor::with_user_passphrase(Secret::new(key.to_owned()));
     let mut encrypted = vec![];
@@ -47,7 +129,7 @@ fn encrypt(content: &String, password: &String, salt: &String) -> Result<Vec<u8>
 }
 
 
-fn decrypt(data: &Vec<u8>, password: &String, salt: &String) -> Result<String, age::DecryptError> {
+fn decrypt(data: &Vec<u8>, password: &String, salt: &String) -> Result<String, WhoChatError> {
     let key = format!("{}{}",&password,&salt);
     let decryptor = match age::Decryptor::new(&data[..])? {
         age::Decryptor::Passphrase(d) => d,
@@ -58,67 +140,51 @@ fn decrypt(data: &Vec<u8>, password: &String, salt: &String) -> Result<String, a
     let mut reader: age::stream::StreamReader<&[u8]> = decryptor.decrypt(&Secret::new(key.to_owned()), None)?;
     reader.read_to_end(&mut decrypted)?;
 
-    Ok(String::from_utf8(decrypted).unwrap())
+    Ok(String::from_utf8(decrypted)?)
 }
 
 
-fn read_data(name: &String) -> io::Result<Vec<u8>> {
+fn read_data(name: &String) -> Result<Vec<u8>, WhoChatError> {
     let path = format!("bucket/chats/{}.txt", &name);
-    let mut file = File::open(path)?;
+    let mut file = match File::open(path) {
+        Ok(v) => v,
+        Err(_e) => return Err(WhoChatError::ChatNotFound),
+    };
     let mut data = Vec::new();
     file.read_to_end(&mut data)?;
     Ok(data)
 }
 
 
-struct DataError;
-
-
-fn get_salt_from_data(data: &Vec<u8>) -> Result<String, DataError> {
+fn get_salt_from_data(data: &Vec<u8>) -> Result<String, WhoChatError> {
     if data.len() < SALT_SIZE {
-        return Err(DataError)
+        return Err(WhoChatError::DataCorruptionError)
     }
 
-    match String::from_utf8(data[0..SALT_SIZE].to_vec()) {
-        Ok(val) => Ok(val),
-        Err(_e) => Err(DataError)
-    }
+    Ok(String::from_utf8(data[0..SALT_SIZE].to_vec())?)
 }
 
 
-fn get_contents_from_data(data: &Vec<u8>, password: &String) -> Result<String, DataError> {
+fn get_contents_from_data(data: &Vec<u8>, password: &String) -> Result<String, WhoChatError> {
     if data.len() <= SALT_SIZE {
-        return Err(DataError)
+        return Err(WhoChatError::DataCorruptionError)
     }
 
     let salt = get_salt_from_data(data)?;
-
     let encrypted_data = &data[SALT_SIZE..];
-    match decrypt(&encrypted_data.to_vec(), &password, &salt) {
-        Ok(val) => Ok(val),
-        Err(_e) => Err(DataError),
-    }
+    decrypt(&encrypted_data.to_vec(), &password, &salt)
 }
 
 
-struct DeleteError;
-
-
-fn delete_data(chat_access: &ChatAccess) -> Result<(), DeleteError> {
-    let data = match read_data(&chat_access.name) {
-        Ok(v) => v,
-        Err(_e) => return Err(DeleteError),
-    };
+fn delete_data(chat_access: &ChatAccess) -> Result<(), WhoChatError> {
+    let data = read_data(&chat_access.name)?;
 
     match get_contents_from_data(&data, &chat_access.password) {
         Ok(_contents) => {
-            match fs::remove_file(format!("bucket/chats/{}.txt", chat_access.name)) {
-                Ok(_v) => (),
-                Err(_e) => return Err(DeleteError),
-            };
+            fs::remove_file(format!("bucket/chats/{}.txt", &chat_access.name))?;
             Ok(())
         },
-        Err(_e) => Err(DeleteError),
+        Err(err) => Err(err),
     }
 }
 
@@ -140,75 +206,91 @@ fn truncate_start_string(content: &String) -> String {
 }
 
 
-fn write_content(chat_name: &String, password: &String, content: &String, salt: &String) -> io::Result<()> {
+fn write_content(chat_name: &String, password: &String, content: &String, salt: &String) -> Result<(), WhoChatError> {
     let content_truncated = truncate_start_string(&content);
 
     let path = format!("bucket/chats/{}.txt", &chat_name);
-    let mut file: File = File::create(path).unwrap();
+    let mut file: File = File::create(path)?;
     file.write_all(&salt.as_bytes())?;
     match encrypt(&content_truncated, &password, salt) {
         Ok(data) => {
             file.write(&data)?;
             Ok(())
         },
-        Err(_e) => Err(io::Error::new(io::ErrorKind::InvalidData, "Error")),
+        Err(e) => Err(e),
     }
 }
 
 
-fn write_first_content(chat_post: &ChatPost) -> io::Result<()> {
+fn write_first_content(chat_post: &ChatPost) -> Result<(), WhoChatError> {
     write_content(&chat_post.name, &chat_post.password, &chat_post.content, &generate_salt(SALT_SIZE))
 }
 
 
-fn append_content(chat_post: &ChatPost) -> io::Result<()> {
-    let data = match read_data(&chat_post.name) {
-        Ok(val) => val,
-        Err(e) => return Err(e),
-    };
-
-    let salt = match get_salt_from_data(&data) {
-        Ok(val) => val,
-        Err(_e) => return Err(io::Error::new(io::ErrorKind::Other, "Error")),
-    };
-
-    let content = match get_contents_from_data(&data, &chat_post.password) {
-        Ok(val) => val,
-        Err(_e) => return Err(io::Error::new(io::ErrorKind::InvalidData, "Error")),
-    };
-
+fn append_content(chat_post: &ChatPost) -> Result<(), WhoChatError> {
+    let data = read_data(&chat_post.name)?;
+    let salt = get_salt_from_data(&data)?;
+    let content = get_contents_from_data(&data, &chat_post.password)?;
     let new_content = format!("{}{}", &content, &chat_post.content);
     write_content(&chat_post.name, &chat_post.password, &new_content, &salt)
 }
 
 
+fn validate_credentials<T: Credentials>(chat_credentials: &T) -> Result<(), WhoChatError> {
+    if !chat_credentials.name().chars().all(char::is_alphanumeric) || chat_credentials.name().len() == 0 {
+        return Err(WhoChatError::InvalidName)
+    }
+
+    if chat_credentials.password().len() == 0 {
+        return Err(WhoChatError::EmptyPassword)
+    }
+
+    Ok(())
+}
+
+
 #[post("/who_chat/get")]
 async fn get_chat(chat_access: web::Json<ChatAccess>) -> impl Responder {
+    match validate_credentials(&chat_access.0) {
+        Ok(_v) => (),
+        Err(err) => return HttpResponse::BadRequest().content_type("text/plain").body(format!("Error: {}", err)),
+    };
+
     let data = match read_data(&chat_access.name) {
         Ok(v) => v,
-        Err(_e) => return HttpResponse::NotFound().content_type("text/plain").body("Chat not found!"),
+        Err(err) => return HttpResponse::NotFound().content_type("text/plain").body(format!("Error: {}", err)),
     };
+
     match get_contents_from_data(&data, &chat_access.password) {
         Ok(contents) => HttpResponse::Ok().content_type("text/plain").body(contents),
-        Err(_e) => HttpResponse::InternalServerError().content_type("text/plain").body("Error!"),
+        Err(err) => HttpResponse::InternalServerError().content_type("text/plain").body(format!("Error: {}", err)),
     }
 }
 
 
 #[post("/who_chat/post")]
 async fn post_chat(chat_post: web::Json<ChatPost>) -> impl Responder {
+    match validate_credentials(&chat_post.0) {
+        Ok(_v) => (),
+        Err(err) => return HttpResponse::BadRequest().content_type("text/plain").body(format!("Error: {}", err)),
+    };
+
+    if chat_post.content.len() == 0 {
+        return HttpResponse::BadRequest().content_type("text/plain").body(format!("Error: {}", WhoChatError::EmptyContent));
+    }
+
     let path = format!("bucket/chats/{}.txt", &chat_post.name);
 
     if Path::new(&path).exists() {
         match append_content(&chat_post) {
             Ok(_val) => HttpResponse::Ok().content_type("text/plain").body("Posted!"),
-            Err(_e) => HttpResponse::InternalServerError().content_type("text/plain").body("Error!"),
+            Err(err) => HttpResponse::InternalServerError().content_type("text/plain").body(format!("Error: {}", err)),
         }
     }
     else{
         match write_first_content(&chat_post) {
             Ok(_val) => HttpResponse::Ok().content_type("text/plain").body("Posted!"),
-            Err(_e) => HttpResponse::InternalServerError().content_type("text/plain").body("Error!"),
+            Err(err) => HttpResponse::InternalServerError().content_type("text/plain").body(format!("Error: {}", err)),
         }
     }
 }
@@ -216,11 +298,17 @@ async fn post_chat(chat_post: web::Json<ChatPost>) -> impl Responder {
 
 #[post("/who_chat/delete")]
 async fn delete_chat(chat_access: web::Json<ChatAccess>) -> impl Responder {
+    match validate_credentials(&chat_access.0) {
+        Ok(_v) => (),
+        Err(err) => return HttpResponse::BadRequest().content_type("text/plain").body(format!("Error: {}", err)),
+    };
+
     match delete_data(&chat_access) {
         Ok(_val) => HttpResponse::Ok().content_type("text/plain").body("Deleted!"),
-        Err(_e) => HttpResponse::InternalServerError().content_type("text/plain").body("Error!"),
+        Err(err) => HttpResponse::InternalServerError().content_type("text/plain").body(format!("Error: {}", err)),
     }
 }
+
 
 #[get("/who_chat")]
 pub async fn render() -> Result<HttpResponse> {
