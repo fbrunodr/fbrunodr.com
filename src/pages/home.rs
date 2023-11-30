@@ -8,6 +8,7 @@ fn get_skill_color(skill: &String) -> String {
         "Computer Vision" => String::from("\"color: #2525e5;\""),
         "AWS" => String::from("\"color: #FF9900;\""),
         "C++" => String::from("\"color: #659ad1;\""),
+        "Rust" => String::from("\"color: #ce422b;\""),
         "Data Structures" => String::from("\"color: #d0d0d0;\""),
         "Portuguese" | "Object Detection" => String::from("\"color: #cfbb0e;\""),
         "IT" => String::from("\"color: #2e6299;\""),
