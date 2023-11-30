@@ -6,7 +6,7 @@ async function get_chat() {
     const name = document.getElementById("name").value;
     const password = document.getElementById("password").value;
 
-    const responseDiv = document.getElementById("response"); 
+    const responseDiv = document.getElementById("response");
 
     fetch('/who_chat/get', {
         method: 'POST',
@@ -63,7 +63,7 @@ async function delete_chat() {
     const name = document.getElementById("name").value;
     const password = document.getElementById("password").value;
 
-    const responseDiv = document.getElementById("response"); 
+    const responseDiv = document.getElementById("response");
 
     fetch('/who_chat/delete', {
         method: 'POST',

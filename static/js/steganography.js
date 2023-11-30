@@ -191,8 +191,10 @@ function extractMessageFromImage() {
 		if(password){
 			message = decryptMessage(encryptedMessage, password);
 		}
-		alert(message);
-		return message;
+
+		const responseDiv = document.getElementById("response");
+		responseDiv.style.backgroundColor = "rgba(0, 0, 0, 0.5)";
+		responseDiv.innerText = `Hidden Text:\n${message}`;
 	}
 }
 

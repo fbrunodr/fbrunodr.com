@@ -135,12 +135,18 @@ a{
 	flex-direction: column;
 }
 
+#response {
+	margin-top: 20px;
+	margin-bottom: 30px;
+	padding: 10px;
+	border-radius: 15px;
+}
+
 @media (min-width: 768px)
 {
     .content{
         width: 70%;
         margin: auto;
-		margin-bottom: 25px;
 		font-size: large;
 		font-size: large;
 		margin-bottom: 40px;

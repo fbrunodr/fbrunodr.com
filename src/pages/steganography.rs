@@ -98,6 +98,10 @@ pub async fn render() -> Result<HttpResponse> {
                     <script type=\"text/javascript\">
                         set_encrypt_mode()
                     </script>
+
+                    <div id=\"response\">
+                    </div>
+
                 </div>
             </body>
         </html>
