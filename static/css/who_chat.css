@@ -6,6 +6,10 @@
 	opacity: 0.5;
 }
 
+#forms-wrapper {
+	margin: 20px 0 30px 0;
+}
+
 .content{
     width: 100%;
     font-size: small;
@@ -15,10 +19,15 @@
 	margin-bottom: 30px;
 }
 
+.who-chat{
+	color: coral;
+}
+
 .title{
-    margin-top: calc(8px + .75vw);
+    margin-top: calc(20px + .75vw);
     margin-bottom: calc(8px + .75vw);
     font-size: calc(1.5em + .75vw);
+	text-align: center;
 }
 
 .intro{
@@ -29,16 +38,113 @@
 	margin-bottom: 30px;
 }
 
+ul{
+	margin-left: 40px;
+}
+
+#mode-switch {
+	display: flex;
+    justify-content: center;
+	margin-top: 30px;
+	margin-bottom: 30px;
+}
+
+.switch{
+	margin: 1px;
+	padding: 15px;
+	min-width: 90px;
+	text-align: center;
+}
+
+.switch:first-child{
+	border-radius: 10px 0 0 10px;
+}
+
+.switch:last-child{
+	border-radius: 0 10px 10px 0;
+}
+
+.switch:hover{
+	cursor: pointer;
+}
+
+#response {
+	margin-top: 20px;
+	margin-bottom: 30px;
+	padding: 10px;
+	border-radius: 15px;
+}
+
+.button{
+	min-width: 100px;
+	padding: 5px;
+	border-radius: 15px;
+	background-color: #439fdf;
+    font-size: small;
+    font-family: 'Source Code Pro', monospace;
+	border: none;
+	margin: auto;
+	margin-top: 5px;
+}
+
+.button:active{
+	color: white;
+	background-color: #1c4b6c;
+}
+
+.button:hover{
+	cursor: pointer;
+}
+
+.item{
+	margin: auto;
+	margin-bottom: 15px;
+	display: flex;
+	align-items: baseline;
+}
+
+.item>input {
+	border-radius: 10px;
+	border: none;
+	font-size: small;
+	padding-left: 10px;
+}
+
+.item>textarea {
+	border-radius: 10px;
+	border: none;
+	font-size: small;
+	padding-left: 10px;
+	padding-top: 5px;
+}
+
+#data-form{
+	display: flex;
+	flex-direction: column;
+}
+
 @media (min-width: 768px)
 {
     .content{
         width: 70%;
         margin: auto;
-		margin-bottom: 25px;
 		font-size: large;
 		font-size: large;
 		margin-bottom: 40px;
     }
+
+	.item>input {
+		font-size: large;
+	}
+
+	.item>textarea {
+		font-size: large;
+	}
+
+	.button{
+		padding: 10px;
+		font-size: medium;
+	}
 }
 
 @media (min-width: 1024px)
