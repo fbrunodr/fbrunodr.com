@@ -2,16 +2,27 @@
 const backgroundCanvas = document.getElementById('background');
 const backgroundCtx = backgroundCanvas.getContext('2d');
 
-// set the width and height of the canvas
-const w = backgroundCanvas.width = 4000;
-const h = backgroundCanvas.height = 3000;
+let w = 0;
+let h = 0;
 
-// draw a black rectangle of width and height same as that of the canvas
-backgroundCtx.fillStyle = '#000';
-backgroundCtx.fillRect(0, 0, w, h);
+let cols = 0;
+let ypos = [];
 
-const cols = Math.floor(w / 20) + 1;
-const ypos = Array(cols).fill(0);
+function handleResize() {
+	w = backgroundCanvas.width = window.innerWidth;
+	h = backgroundCanvas.height = window.innerHeight;
+
+	// draw a black rectangle of width and height same as that of the canvas
+	backgroundCtx.fillStyle = '#000';
+	backgroundCtx.fillRect(0, 0, w, h);
+
+	cols = Math.floor(w / 20) + 1;
+	ypos = Array(cols).fill(0);
+}
+
+window.addEventListener('resize', handleResize);
+// Initially call the function to handle the initial dimensions
+handleResize();
 
 function matrix () {
 	// Draw a semitransparent black rectangle on top of previous drawing
@@ -41,4 +52,3 @@ function matrix () {
 
 // render the animation at 20 FPS.
 setInterval(matrix, 50);
-
