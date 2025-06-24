@@ -52,8 +52,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Handle input validation
     handleInput.addEventListener('input', function() {
-        // Remove any non-alphanumeric characters except underscores and hyphens
-        this.value = this.value.replace(/[^a-zA-Z0-9_-]/g, '');
+        // Remove any non-alphanumeric characters except underscores, hyphens, and dots
+        this.value = this.value.replace(/[^a-zA-Z0-9_\-\.]/g, '');
     });
 
     function setLoadingState(loading) {
