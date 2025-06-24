@@ -23,6 +23,8 @@ fn get_skill_color(skill: &String) -> String {
         "Encryption" => String::from("\"color: #28bb34;\""),
         "Aerospace" => String::from("\"color: #7c33c4;\""),
         "Optimization" => String::from("\"color: red;\""),
+        "Machine Learning" => String::from("\"color: #00B0F0;\""),
+        "Competitive Programming" => String::from("\"color:rgb(160, 60, 218);\""),
         _ => String::from("\"color: red;\""),
     }
 }
