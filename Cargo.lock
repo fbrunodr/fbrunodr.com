@@ -642,6 +642,7 @@ dependencies = [
  "actix-web",
  "age",
  "rand 0.8.5",
+ "regex",
  "serde",
 ]
 

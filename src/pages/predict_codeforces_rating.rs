@@ -1,6 +1,7 @@
 use actix_web::{get, post, web, HttpResponse, Result};
 use serde::{Deserialize, Serialize};
 use std::process::Command;
+use regex::Regex;
 
 use crate::components::navbar::navbar;
 
@@ -17,6 +18,39 @@ struct PredictionResponse {
     predicted_rating: Option<i32>,
     rating_change: Option<i32>,
     motivational_message: Option<String>,
+}
+
+// Validate Codeforces handle format
+fn validate_handle(handle: &str) -> Result<(), String> {
+    // Codeforces handles: 3-24 characters, alphanumeric, underscore, hyphen, dot
+    let handle_regex = Regex::new(r"^[a-zA-Z0-9_\-\.]{3,24}$").unwrap();
+
+    if handle.is_empty() {
+        return Err("Handle cannot be empty".to_string());
+    }
+
+    if handle.len() > 24 {
+        return Err("Handle too long (maximum 24 characters)".to_string());
+    }
+
+    if !handle_regex.is_match(handle) {
+        return Err("Invalid handle format. Use only letters, numbers, underscore, hyphen, and dot (3-24 characters)".to_string());
+    }
+
+    // Additional checks for potentially dangerous patterns
+    let dangerous_patterns = [
+        ";", "&&", "||", "|", ">", "<", "`", "$", "(", ")", "{", "}", "[", "]",
+        "rm", "cat", "nc", "wget", "curl", "bash", "sh", "python", "perl"
+    ];
+
+    let handle_lower = handle.to_lowercase();
+    for pattern in &dangerous_patterns {
+        if handle_lower.contains(pattern) {
+            return Err("Handle contains invalid characters".to_string());
+        }
+    }
+
+    Ok(())
 }
 
 #[get("/predict-codeforces-rating")]
@@ -53,7 +87,9 @@ pub async fn render() -> Result<HttpResponse> {
                                 id=\"handle-input\"
                                 class=\"handle-input\"
                                 placeholder=\"Enter your handle (e.g., tourist)\"
-                                maxlength=\"36\"
+                                maxlength=\"24\"
+                                pattern=\"[a-zA-Z0-9_\\-\\.]{{3,24}}\"
+                                title=\"3-24 characters: letters, numbers, underscore, hyphen, dot\"
                             >
                             <button id=\"predict-btn\" class=\"predict-button\">
                                 <span class=\"button-text\">Predict Rating</span>
@@ -109,10 +145,11 @@ pub async fn render() -> Result<HttpResponse> {
 pub async fn predict_rating(data: web::Json<HandleRequest>) -> Result<HttpResponse> {
     let handle = &data.handle.trim();
 
-    if handle.is_empty() {
+    // Validate handle before processing
+    if let Err(validation_error) = validate_handle(handle) {
         return Ok(HttpResponse::BadRequest().json(PredictionResponse {
             success: false,
-            message: "Handle cannot be empty".to_string(),
+            message: validation_error.to_string(),
             current_rating: None,
             predicted_rating: None,
             rating_change: None,
