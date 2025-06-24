@@ -40,7 +40,6 @@ fn validate_handle(handle: &str) -> Result<(), String> {
     // Additional checks for potentially dangerous patterns
     let dangerous_patterns = [
         ";", "&&", "||", "|", ">", "<", "`", "$", "(", ")", "{", "}", "[", "]",
-        "rm", "cat", "nc", "wget", "curl", "bash", "sh", "python", "perl"
     ];
 
     let handle_lower = handle.to_lowercase();
