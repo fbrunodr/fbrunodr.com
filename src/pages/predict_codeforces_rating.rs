@@ -74,14 +74,14 @@ pub async fn render() -> Result<HttpResponse> {
                     <div class=\"intro\">
                         <h2 class=\"title\">Code<span style=\"color: #ff3333;\">forces</span> Rating <span style=\"color: #5dfa5c;\">Predictor</span></h2>
                         <p>
-                            Enter your Codeforces handle below to get a prediction of your rating in 6 months.
+                            Enter your Codeforces' handle below to get a prediction of your rating in 6 months.
                             This prediction is based on your current rating and historical data patterns.
                         </p>
                     </div>
 
                     <div class=\"prediction-form\">
                         <div class=\"form-container\">
-                            <label for=\"handle-input\" class=\"form-label\">Codeforces Handle:</label>
+                            <label for=\"handle-input\" class=\"form-label\">Codeforces' Handle:</label>
                             <input
                                 type=\"text\"
                                 id=\"handle-input\"
@@ -106,7 +106,7 @@ pub async fn render() -> Result<HttpResponse> {
                     <div class=\"info-section\">
                         <h3 class=\"info-title\">How it works</h3>
                         <p>
-                            This predictor analyzes your Codeforces submissions history, problem-solving patterns,
+                            This predictor analyzes your Codeforces' submissions history, problem-solving patterns,
                             and rating progression to forecast your future performance. The prediction takes into account:
                             </p>
                         <ul>
