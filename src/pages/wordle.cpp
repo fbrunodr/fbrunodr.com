@@ -198,6 +198,10 @@ int main(int argc, char* argv[]){
     }
 
     vec<str> remaining = filterWords(dictionary, history);
+    if(remaining.empty()){
+        cerr << "No words match the given feedback" << endl;
+        return 0;
+    }
 
     vec<pair<str, double>> guessesAndEntropies = solver(remaining);
     cout << fixed << setprecision(4);
