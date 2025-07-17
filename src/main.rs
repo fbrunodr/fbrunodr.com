@@ -10,6 +10,7 @@ use pages::steganography;
 use pages::graduation_thesis;
 use pages::who_chat;
 use pages::predict_codeforces_rating;
+use pages::wordle_solver;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -26,6 +27,8 @@ async fn main() -> std::io::Result<()> {
             .service(who_chat::render)
             .service(predict_codeforces_rating::render)
             .service(predict_codeforces_rating::predict_rating)
+            .service(wordle_solver::render)
+            .service(wordle_solver::solve_wordle)
     })
     .bind(("127.0.0.1", 8080))?
     .run()
