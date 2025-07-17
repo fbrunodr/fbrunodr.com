@@ -1,25 +1,47 @@
 document.addEventListener('DOMContentLoaded', function() {
-    const greenInput = document.getElementById('green-input');
-    const greyInput = document.getElementById('grey-input');
-    const yellowInput = document.getElementById('yellow-input');
+    const wordleGrid = document.getElementById('wordle-grid');
+    const addRowBtn = document.getElementById('add-row-btn');
     const solveBtn = document.getElementById('solve-btn');
     const resultContainer = document.getElementById('result-container');
     const resultContent = document.getElementById('result-content');
     const buttonText = document.querySelector('.button-text');
     const loadingSpinner = document.querySelector('.loading-spinner');
 
-    // Handle form submission
-    solveBtn.addEventListener('click', async function() {
-        const green = greenInput.value.trim();
-        const grey = greyInput.value.trim();
-        const yellow = yellowInput.value.trim();
+    let rowCount = 0;
 
-        // Basic validation
-        if (!green || green.length !== 5) {
-            showError('Please enter exactly 5 characters for green letters (use ? for unknown positions)');
+    // Color states for tiles: 0 = grey, 1 = yellow, 2 = green
+    const TILE_STATES = ['empty', 'grey', 'yellow', 'green'];
+    const STATE_CODES = { 'empty': '', 'grey': '0', 'yellow': '1', 'green': '2' };
+
+    // Initialize with one row
+    addRow();
+
+    // Add row functionality
+    addRowBtn.addEventListener('click', function() {
+        addRow();
+    });
+
+    // Solve button functionality
+    solveBtn.addEventListener('click', async function() {
+        const validationResult = validateAllRows();
+
+        if (!validationResult.isValid) {
+            showError(validationResult.errorMessage);
             return;
         }
 
+        const guesses = validationResult.completeGuesses;
+
+        // If no complete guesses, get initial suggestions
+        if (guesses.length === 0) {
+            await makeApiCall([]);
+            return;
+        }
+
+        await makeApiCall(guesses);
+    });
+
+    async function makeApiCall(guesses) {
         // Show loading state
         setLoadingState(true);
         hideResult();
@@ -30,11 +52,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({
-                    green_letters: green,
-                    grey_letters: grey,
-                    yellow_letters: yellow
-                })
+                body: JSON.stringify({ guesses: guesses })
             });
 
             const data = await response.json();
@@ -50,47 +68,263 @@ document.addEventListener('DOMContentLoaded', function() {
         } finally {
             setLoadingState(false);
         }
-    });
+    }
 
-    // Handle Enter key press on any input
-    [greenInput, greyInput, yellowInput].forEach(input => {
-        input.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                solveBtn.click();
+    function addRow() {
+        rowCount++;
+        const row = createWordleRow(rowCount);
+        wordleGrid.appendChild(row);
+
+        // Focus on first tile of new row
+        const firstTile = row.querySelector('.wordle-tile input');
+        firstTile.focus();
+    }
+
+    function createWordleRow(rowId) {
+        const row = document.createElement('div');
+        row.className = 'wordle-row';
+        row.dataset.rowId = rowId;
+
+        // Create 5 tiles
+        for (let i = 0; i < 5; i++) {
+            const tile = createWordleTile(rowId, i);
+            row.appendChild(tile);
+        }
+
+        // Always add remove button (allow deletion of any row including first)
+        const actions = document.createElement('div');
+        actions.className = 'row-actions';
+
+        const removeBtn = document.createElement('button');
+        removeBtn.className = 'remove-row-btn';
+        removeBtn.innerHTML = '×';
+        removeBtn.title = 'Remove this row';
+        removeBtn.addEventListener('click', () => removeRow(rowId));
+
+        actions.appendChild(removeBtn);
+        row.appendChild(actions);
+
+        return row;
+    }
+
+    function createWordleTile(rowId, tileIndex) {
+        const tile = document.createElement('div');
+        tile.className = 'wordle-tile empty';
+        tile.dataset.state = 'empty';
+        tile.dataset.rowId = rowId;
+        tile.dataset.tileIndex = tileIndex;
+
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.maxLength = 1;
+        input.addEventListener('input', handleTileInput);
+        input.addEventListener('keydown', handleTileKeydown);
+
+        tile.appendChild(input);
+
+        // Click to cycle colors (only when tile has a letter)
+        tile.addEventListener('click', function() {
+            if (input.value.trim() !== '') {
+                cycleTileState(tile);
             }
         });
-    });
 
-    // Input validation and formatting
-    greenInput.addEventListener('input', function() {
-        // Allow only letters and ? for green input, max 5 characters
-        this.value = this.value.replace(/[^a-zA-Z?]/g, '').substring(0, 5);
+        return tile;
+    }
 
-        // Auto-complete with ? if less than 5 characters when user stops typing
-        clearTimeout(this.timeout);
-        this.timeout = setTimeout(() => {
-            if (this.value.length > 0 && this.value.length < 5) {
-                this.value = this.value.padEnd(5, '?');
+    function handleTileInput(event) {
+        const input = event.target;
+        const tile = input.parentElement;
+
+        // Only allow letters
+        input.value = input.value.replace(/[^a-zA-Z]/g, '').toUpperCase();
+
+        if (input.value) {
+            // Set to grey by default when letter is entered
+            if (tile.dataset.state === 'empty') {
+                setTileState(tile, 'grey');
             }
-        }, 1000);
-    });
 
-    greyInput.addEventListener('input', function() {
-        // Allow only letters for grey input
-        this.value = this.value.replace(/[^a-zA-Z]/g, '');
-    });
-
-    yellowInput.addEventListener('input', function() {
-        // Allow only letters for yellow input
-        this.value = this.value.replace(/[^a-zA-Z]/g, '');
-    });
-
-    // Auto-focus next input
-    greenInput.addEventListener('input', function() {
-        if (this.value.length === 5) {
-            greyInput.focus();
+            // Move to next tile
+            moveToNextTile(tile);
+        } else {
+            // Reset to empty if no letter
+            setTileState(tile, 'empty');
         }
-    });
+    }
+
+    function handleTileKeydown(event) {
+        const input = event.target;
+        const tile = input.parentElement;
+
+        if (event.key === 'Backspace' && input.value === '') {
+            // Move to previous tile if current is empty
+            moveToPrevTile(tile);
+        } else if (event.key === 'ArrowLeft') {
+            event.preventDefault();
+            moveToPrevTile(tile);
+        } else if (event.key === 'ArrowRight') {
+            event.preventDefault();
+            moveToNextTile(tile);
+        } else if (event.key === 'ArrowUp') {
+            event.preventDefault();
+            moveToTileAbove(tile);
+        } else if (event.key === 'ArrowDown') {
+            event.preventDefault();
+            moveToTileBelow(tile);
+        } else if (event.key === ' ' || event.key === 'Enter') {
+            event.preventDefault();
+            if (input.value.trim() !== '') {
+                cycleTileState(tile);
+            }
+        }
+    }
+
+    function cycleTileState(tile) {
+        const currentState = tile.dataset.state;
+        let nextStateIndex;
+
+        if (currentState === 'empty' || currentState === 'grey') {
+            nextStateIndex = 2; // yellow
+        } else if (currentState === 'yellow') {
+            nextStateIndex = 3; // green
+        } else if (currentState === 'green') {
+            nextStateIndex = 1; // grey
+        }
+
+        const nextState = TILE_STATES[nextStateIndex];
+        setTileState(tile, nextState);
+    }
+
+    function setTileState(tile, state) {
+        // Remove all state classes
+        TILE_STATES.forEach(s => tile.classList.remove(s));
+
+        // Add new state
+        tile.classList.add(state);
+        tile.dataset.state = state;
+    }
+
+    function moveToNextTile(currentTile) {
+        const rowId = currentTile.dataset.rowId;
+        const tileIndex = parseInt(currentTile.dataset.tileIndex);
+        const nextTile = document.querySelector(`[data-row-id="${rowId}"][data-tile-index="${tileIndex + 1}"] input`);
+
+        if (nextTile) {
+            nextTile.focus();
+        }
+    }
+
+    function moveToPrevTile(currentTile) {
+        const rowId = currentTile.dataset.rowId;
+        const tileIndex = parseInt(currentTile.dataset.tileIndex);
+        const prevTile = document.querySelector(`[data-row-id="${rowId}"][data-tile-index="${tileIndex - 1}"] input`);
+
+        if (prevTile) {
+            prevTile.focus();
+        }
+    }
+
+    function moveToTileAbove(currentTile) {
+        const rowId = parseInt(currentTile.dataset.rowId);
+        const tileIndex = currentTile.dataset.tileIndex;
+        const aboveTile = document.querySelector(`[data-row-id="${rowId - 1}"][data-tile-index="${tileIndex}"] input`);
+
+        if (aboveTile) {
+            aboveTile.focus();
+        }
+    }
+
+    function moveToTileBelow(currentTile) {
+        const rowId = parseInt(currentTile.dataset.rowId);
+        const tileIndex = currentTile.dataset.tileIndex;
+        const belowTile = document.querySelector(`[data-row-id="${rowId + 1}"][data-tile-index="${tileIndex}"] input`);
+
+        if (belowTile) {
+            belowTile.focus();
+        }
+    }
+
+    function removeRow(rowId) {
+        const row = document.querySelector(`[data-row-id="${rowId}"]`);
+        if (row) {
+            row.remove();
+        }
+    }
+
+    function validateAllRows() {
+        const rows = document.querySelectorAll('.wordle-row');
+        const completeGuesses = [];
+
+        // Special case: if no rows exist, allow for initial suggestions
+        if (rows.length === 0) {
+            return {
+                isValid: true,
+                completeGuesses: []
+            };
+        }
+
+        for (let rowIndex = 0; rowIndex < rows.length; rowIndex++) {
+            const row = rows[rowIndex];
+            const tiles = row.querySelectorAll('.wordle-tile');
+
+            let word = '';
+            let feedback = '';
+            let letterCount = 0;
+            let feedbackCount = 0;
+
+            tiles.forEach(tile => {
+                const input = tile.querySelector('input');
+                const letter = input.value.trim().toLowerCase();
+                const state = tile.dataset.state;
+
+                if (letter) {
+                    letterCount++;
+                    word += letter;
+
+                    if (state !== 'empty') {
+                        feedbackCount++;
+                        feedback += STATE_CODES[state] || '';
+                    } else {
+                        feedback += '';
+                    }
+                } else {
+                    word += '';
+                    feedback += '';
+                }
+            });
+
+            // ALL visible rows must be complete (5 letters + 5 colors)
+            const isCompleteRow = letterCount === 5 && feedbackCount === 5;
+
+            if (!isCompleteRow) {
+                if (letterCount === 0 && feedbackCount === 0) {
+                    return {
+                        isValid: false,
+                        errorMessage: `Row ${rowIndex + 1}: This row is empty. Please fill it completely or remove it using the × button`
+                    };
+                } else if (letterCount < 5) {
+                    return {
+                        isValid: false,
+                        errorMessage: `Row ${rowIndex + 1}: Please enter exactly 5 letters (currently has ${letterCount})`
+                    };
+                } else if (feedbackCount < 5) {
+                    return {
+                        isValid: false,
+                        errorMessage: `Row ${rowIndex + 1}: Please set feedback colors for all 5 letters (currently ${feedbackCount}/5 have colors)`
+                    };
+                }
+            }
+
+            // Add complete row to guesses
+            completeGuesses.push({ word, feedback });
+        }
+
+        return {
+            isValid: true,
+            completeGuesses: completeGuesses
+        };
+    }
 
     function setLoadingState(loading) {
         const formContainer = document.querySelector('.form-container');
@@ -101,24 +335,14 @@ document.addEventListener('DOMContentLoaded', function() {
             buttonText.style.display = 'none';
             loadingSpinner.style.display = 'inline';
             formContainer.classList.add('loading');
-
-            // Add subtle input field animation
-            [greenInput, greyInput, yellowInput].forEach(input => {
-                input.style.opacity = '0.7';
-                input.style.transform = 'scale(0.98)';
-            });
+            addRowBtn.disabled = true;
         } else {
             solveBtn.disabled = false;
             solveBtn.classList.remove('loading');
             buttonText.style.display = 'inline';
             loadingSpinner.style.display = 'none';
             formContainer.classList.remove('loading');
-
-            // Restore input fields
-            [greenInput, greyInput, yellowInput].forEach(input => {
-                input.style.opacity = '1';
-                input.style.transform = 'scale(1)';
-            });
+            addRowBtn.disabled = false;
         }
     }
 
@@ -141,15 +365,13 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         resultContent.innerHTML = `
-            <div class="result-title">🎯 Solutions Found!</div>
+            <div class="result-title">🎯 Best Suggestions</div>
             <div class="result-message">${message}</div>
             ${suggestionsHtml}
-            ${suggestions && suggestions.length > 0 ? '<p style="margin-top: 20px; font-size: 0.9rem; opacity: 0.8;">💡 Click on any word to copy it</p>' : ''}
+            ${suggestions && suggestions.length > 0 ? '<p style="margin-top: 15px; font-size: 0.9rem; opacity: 0.8;">💡 Click on any word to copy it</p>' : ''}
         `;
 
         resultContainer.style.display = 'block';
-
-        // Scroll to result
         resultContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 
@@ -160,8 +382,6 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="result-message">${message}</div>
         `;
         resultContainer.style.display = 'block';
-
-        // Scroll to result
         resultContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 
@@ -172,11 +392,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // Copy to clipboard function
     window.copyToClipboard = function(text) {
         navigator.clipboard.writeText(text).then(function() {
-            // Show temporary feedback
-            const event = new CustomEvent('wordCopied', { detail: text });
-            document.dispatchEvent(event);
-
-            // Visual feedback
             showToast(`Copied "${text}" to clipboard!`);
         }).catch(function(err) {
             console.error('Could not copy text: ', err);
@@ -186,13 +401,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Toast notification function
     function showToast(message) {
-        // Remove existing toast
         const existingToast = document.querySelector('.toast');
         if (existingToast) {
             existingToast.remove();
         }
 
-        // Create new toast
         const toast = document.createElement('div');
         toast.className = 'toast';
         toast.textContent = message;
@@ -207,9 +420,9 @@ document.addEventListener('DOMContentLoaded', function() {
             font-weight: 500;
             z-index: 1000;
             animation: slideIn 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
         `;
 
-        // Add animation keyframes if not already added
         if (!document.querySelector('#toast-styles')) {
             const style = document.createElement('style');
             style.id = 'toast-styles';
@@ -228,37 +441,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
         document.body.appendChild(toast);
 
-        // Remove toast after 3 seconds
         setTimeout(() => {
             toast.style.animation = 'slideOut 0.3s ease';
             setTimeout(() => toast.remove(), 300);
         }, 3000);
     }
-
-    // Add visual feedback for inputs
-    [greenInput, greyInput, yellowInput].forEach(input => {
-        input.addEventListener('focus', function() {
-            this.parentElement.style.transform = 'scale(1.01)';
-        });
-
-        input.addEventListener('blur', function() {
-            this.parentElement.style.transform = 'scale(1)';
-        });
-    });
-
-    // Add click animation to button
-    solveBtn.addEventListener('mousedown', function() {
-        this.style.transform = 'scale(0.98)';
-    });
-
-    solveBtn.addEventListener('mouseup', function() {
-        this.style.transform = 'scale(1)';
-    });
-
-    solveBtn.addEventListener('mouseleave', function() {
-        this.style.transform = 'scale(1)';
-    });
-
-    // Auto-focus first input on page load
-    greenInput.focus();
 }); 

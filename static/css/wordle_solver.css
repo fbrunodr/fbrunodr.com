@@ -1,6 +1,6 @@
 /* Dark background for the page */
 body {
-    background: linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 50%, #1a1a1a 100%);
+    background: linear-gradient(135deg, #0f311f 0%, #0f0f0f 50%, #392e07 100%);
     background-color: #0f0f0f;
     min-height: 100vh;
     margin: 0;
@@ -8,7 +8,7 @@ body {
 }
 
 .content {
-    max-width: 800px;
+    max-width: 600px;
     margin: 0 auto;
     padding: 40px 20px;
     color: #ffffff;
@@ -18,7 +18,7 @@ body {
 
 .intro {
     text-align: center;
-    margin-bottom: 50px;
+    margin-bottom: 40px;
 }
 
 .title {
@@ -33,19 +33,19 @@ body {
     font-size: 1.1rem;
     line-height: 1.6;
     color: #cccccc;
-    max-width: 600px;
+    max-width: 500px;
     margin: 0 auto;
 }
 
 .solver-form {
-    margin-bottom: 50px;
+    margin-bottom: 40px;
 }
 
 .form-container {
     background: rgba(255, 255, 255, 0.08);
     border: 1px solid rgba(255, 255, 255, 0.15);
     border-radius: 16px;
-    padding: 40px;
+    padding: 30px;
     backdrop-filter: blur(20px);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
     position: relative;
@@ -62,78 +62,148 @@ body {
     background: linear-gradient(90deg, transparent, rgba(93, 250, 92, 0.5), transparent);
 }
 
-.input-group {
+/* Wordle Grid Styles */
+.wordle-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
     margin-bottom: 25px;
+    align-items: center;
 }
 
-.form-label {
-    display: block;
-    font-size: 1.1rem;
-    margin-bottom: 8px;
-    color: #ffffff;
-    font-weight: 500;
+.wordle-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
 }
 
-.wordle-input {
-    width: 100%;
-    padding: 15px 20px;
-    font-size: 1.1rem;
-    background: rgba(255, 255, 255, 0.1);
-    border: 2px solid rgba(255, 255, 255, 0.2);
-    border-radius: 12px;
-    color: #ffffff;
-    transition: all 0.3s ease;
+.wordle-tile {
+    width: 60px;
+    height: 60px;
+    border: 2px solid #3a3a3c;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    font-weight: bold;
     font-family: 'Source Code Pro', monospace;
-    font-weight: 500;
     text-transform: uppercase;
-    letter-spacing: 2px;
-    box-sizing: border-box;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+    position: relative;
 }
 
-.wordle-input:focus {
+.wordle-tile input {
+    width: 100%;
+    height: 100%;
+    border: none;
+    background: transparent;
+    color: inherit;
+    text-align: center;
+    font-size: 1.8rem;
+    font-weight: bold;
+    font-family: 'Source Code Pro', monospace;
+    text-transform: uppercase;
     outline: none;
-    background: rgba(255, 255, 255, 0.15);
-    box-shadow: 0 0 0 3px rgba(93, 250, 92, 0.1);
-    transform: translateY(-1px);
+    cursor: inherit;
 }
 
-.wordle-input::placeholder {
-    color: rgba(255, 255, 255, 0.5);
-    text-transform: none;
-    letter-spacing: normal;
+.wordle-tile:hover {
+    transform: scale(1.05);
+    border-color: #ffffff;
 }
 
-/* Wordle color theming */
-.green-input:focus {
-    border-color: #6aaa64;
-    box-shadow: 0 0 0 3px rgba(106, 170, 100, 0.2);
-}
-
-.grey-input:focus {
+/* Tile States */
+.wordle-tile.grey {
+    background-color: #787c7e;
     border-color: #787c7e;
-    box-shadow: 0 0 0 3px rgba(120, 124, 126, 0.2);
+    color: #ffffff;
 }
 
-.yellow-input:focus {
+.wordle-tile.yellow {
+    background-color: #c9b458;
     border-color: #c9b458;
-    box-shadow: 0 0 0 3px rgba(201, 180, 88, 0.2);
+    color: #ffffff;
 }
 
-.input-help {
-    display: block;
-    color: rgba(255, 255, 255, 0.6);
-    font-size: 0.9rem;
-    margin-top: 5px;
-    font-style: italic;
+.wordle-tile.green {
+    background-color: #6aaa64;
+    border-color: #6aaa64;
+    color: #ffffff;
+}
+
+.wordle-tile.empty {
+    background-color: transparent;
+    border-color: #3a3a3c;
+    color: #ffffff;
+}
+
+.wordle-tile.empty:hover {
+    border-color: #565758;
+}
+
+/* Row Actions */
+.row-actions {
+    display: flex;
+    gap: 8px;
+    margin-left: 10px;
+}
+
+.remove-row-btn {
+    width: 30px;
+    height: 30px;
+    border: none;
+    background: #ff6b6b;
+    border-radius: 50%;
+    color: #ffffff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    transition: all 0.2s ease;
+}
+
+.remove-row-btn:hover {
+    background: #ff5252;
+    transform: scale(1.1);
+}
+
+/* Controls */
+.controls {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.add-row-button {
+    padding: 12px 20px;
+    font-size: 1rem;
+    background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
+    border: none;
+    border-radius: 8px;
+    color: #ffffff;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: 'Open Sans', sans-serif;
+}
+
+.add-row-button:hover {
+    background: linear-gradient(135deg, #5a6578 0%, #3d4758 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 .solve-button {
-    width: 100%;
-    padding: 18px 30px;
-    font-size: 1.2rem;
+    padding: 15px 30px;
+    font-size: 1.1rem;
     background: linear-gradient(135deg, #6aaa64 0%, #5a8f56 100%);
     border: none;
-    border-radius: 12px;
+    border-radius: 8px;
     color: #ffffff;
     font-weight: 600;
     cursor: pointer;
@@ -141,7 +211,6 @@ body {
     font-family: 'Open Sans', sans-serif;
     position: relative;
     overflow: hidden;
-    margin-top: 15px;
 }
 
 .solve-button:hover {
@@ -165,8 +234,6 @@ body {
 .solve-button.loading {
     background: linear-gradient(135deg, #6aaa64 0%, #5a8f56 100%);
     animation: loadingPulse 2s ease-in-out infinite;
-    position: relative;
-    overflow: hidden;
 }
 
 .solve-button.loading::before {
@@ -192,12 +259,8 @@ body {
 }
 
 @keyframes loadingShimmer {
-    0% {
-        left: -100%;
-    }
-    100% {
-        left: 100%;
-    }
+    0% { left: -100%; }
+    100% { left: 100%; }
 }
 
 .loading-spinner {
@@ -256,15 +319,16 @@ body {
     }
 }
 
+/* Results */
 .result-container {
-    margin-bottom: 50px;
+    margin-bottom: 40px;
 }
 
 .result-content {
     background: rgba(255, 255, 255, 0.08);
     border: 1px solid rgba(255, 255, 255, 0.15);
     border-radius: 16px;
-    padding: 30px;
+    padding: 25px;
     backdrop-filter: blur(20px);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
     text-align: center;
@@ -301,34 +365,34 @@ body {
 }
 
 .result-title {
-    font-size: 1.5rem;
+    font-size: 1.4rem;
     margin-bottom: 15px;
     font-weight: 600;
 }
 
 .result-message {
-    font-size: 1.1rem;
+    font-size: 1rem;
     line-height: 1.6;
     color: #cccccc;
-    margin-bottom: 25px;
+    margin-bottom: 20px;
 }
 
 .suggestions-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-    gap: 15px;
-    margin-top: 25px;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 12px;
+    margin-top: 20px;
 }
 
 .suggestion-word {
     background: rgba(106, 170, 100, 0.2);
     border: 2px solid #6aaa64;
-    border-radius: 8px;
-    padding: 15px 10px;
-    font-size: 1.3rem;
+    border-radius: 6px;
+    padding: 12px 8px;
+    font-size: 1.1rem;
     font-weight: bold;
     font-family: 'Source Code Pro', monospace;
-    letter-spacing: 2px;
+    letter-spacing: 1px;
     color: #ffffff;
     text-align: center;
     transition: all 0.3s ease;
@@ -338,19 +402,20 @@ body {
 .suggestion-word:hover {
     background: rgba(106, 170, 100, 0.3);
     transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(106, 170, 100, 0.3);
+    box-shadow: 0 4px 12px rgba(106, 170, 100, 0.3);
 }
 
+/* Info Section */
 .info-section {
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 16px;
-    padding: 30px;
-    margin-top: 40px;
+    padding: 25px;
+    margin-top: 30px;
 }
 
 .info-title {
-    font-size: 1.4rem;
+    font-size: 1.3rem;
     margin-bottom: 20px;
     color: #ffffff;
     font-weight: 500;
@@ -360,32 +425,104 @@ body {
 .instructions {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 15px;
+    margin-bottom: 25px;
 }
 
 .instruction-item {
     display: flex;
     align-items: flex-start;
-    gap: 15px;
-    padding: 20px;
+    gap: 12px;
+    padding: 15px;
     background: rgba(255, 255, 255, 0.05);
-    border-radius: 12px;
-    border-left: 4px solid #6aaa64;
+    border-radius: 8px;
+    border-left: 3px solid #6aaa64;
 }
 
 .instruction-icon {
-    font-size: 1.5rem;
-    min-width: 30px;
+    font-size: 1.3rem;
+    min-width: 25px;
     text-align: center;
+    margin-top: 2px;
 }
 
 .instruction-item div {
     flex: 1;
-    line-height: 1.5;
+    line-height: 1.4;
 }
 
 .instruction-item strong {
     color: #6aaa64;
+}
+
+/* Color Examples in Instructions */
+.color-example {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+
+.color-example.grey {
+    background-color: #787c7e;
+    color: #ffffff;
+}
+
+.color-example.yellow {
+    background-color: #c9b458;
+    color: #ffffff;
+}
+
+.color-example.green {
+    background-color: #6aaa64;
+    color: #ffffff;
+}
+
+/* Color Legend */
+.color-legend {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding-top: 20px;
+}
+
+.color-legend h4 {
+    margin: 0 0 15px 0;
+    color: #ffffff;
+    text-align: center;
+    font-size: 1.1rem;
+}
+
+.legend-items {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+}
+
+.legend-tile {
+    width: 20px;
+    height: 20px;
+    border-radius: 3px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.legend-tile.grey {
+    background-color: #787c7e;
+}
+
+.legend-tile.yellow {
+    background-color: #c9b458;
+}
+
+.legend-tile.green {
+    background-color: #6aaa64;
 }
 
 /* Responsive design */
@@ -399,21 +536,114 @@ body {
     }
     
     .form-container {
-        padding: 25px;
+        padding: 20px;
+    }
+    
+    .wordle-tile {
+        width: 50px;
+        height: 50px;
+        font-size: 1.5rem;
+    }
+    
+    .wordle-tile input {
+        font-size: 1.5rem;
     }
     
     .suggestions-grid {
-        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-        gap: 10px;
+        grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+        gap: 8px;
     }
     
     .suggestion-word {
-        font-size: 1.1rem;
-        padding: 12px 8px;
+        font-size: 1rem;
+        padding: 10px 6px;
+    }
+    
+    .controls {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .legend-items {
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
     }
     
     .instruction-item {
         flex-direction: column;
-        gap: 10px;
+        gap: 8px;
+        text-align: center;
+    }
+
+    .trivia-section {
+        padding: 20px;
+        margin-top: 20px;
+    }
+    
+    .trivia-content p {
+        margin-bottom: 15px;
     }
 } 
+
+/* Trivia Section */
+.trivia-section {
+    background: linear-gradient(135deg, rgba(138, 43, 226, 0.1) 0%, rgba(75, 0, 130, 0.08) 100%);
+    border: 1px solid rgba(138, 43, 226, 0.2);
+    border-radius: 16px;
+    padding: 25px;
+    margin-top: 30px;
+    position: relative;
+    overflow: hidden;
+}
+
+.trivia-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(138, 43, 226, 0.6), transparent);
+}
+
+.trivia-title {
+    font-size: 1.4rem;
+    margin-bottom: 20px;
+    color: #e6d7ff;
+    font-weight: 600;
+    text-align: center;
+    text-shadow: 0 2px 4px rgba(138, 43, 226, 0.3);
+}
+
+.trivia-content {
+    line-height: 1.6;
+}
+
+.trivia-content p {
+    margin-bottom: 18px;
+    color: #e0e0e0;
+    font-size: 1rem;
+    text-align: justify;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 8px;
+    border-left: 3px solid rgba(138, 43, 226, 0.4);
+    transition: all 0.2s ease;
+}
+
+.trivia-content p:last-child {
+    margin-bottom: 0;
+}
+
+.trivia-content p:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-left-color: rgba(138, 43, 226, 0.6);
+    transform: translateX(2px);
+}
+
+.trivia-content strong {
+    color: #c9a9dd;
+    font-weight: 600;
+    text-shadow: 0 1px 2px rgba(138, 43, 226, 0.2);
+}

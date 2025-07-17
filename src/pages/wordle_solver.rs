@@ -5,11 +5,18 @@ use regex::Regex;
 
 use crate::components::navbar::navbar;
 
+// Configuration constants
+const MAX_SUGGESTIONS: usize = 10;
+
+#[derive(Deserialize, Clone)]
+struct GuessData {
+    word: String,
+    feedback: String,
+}
+
 #[derive(Deserialize)]
 struct WordleRequest {
-    green_letters: String,
-    grey_letters: String,
-    yellow_letters: String,
+    guesses: Vec<GuessData>,
 }
 
 #[derive(Serialize)]
@@ -20,25 +27,37 @@ struct WordleResponse {
 }
 
 // Validate inputs
-fn validate_wordle_input(green: &str, grey: &str, yellow: &str) -> Result<(), String> {
-    // Green letters must be exactly 5 characters
-    if green.len() != 5 {
-        return Err("Green letters must be exactly 5 characters (use ? for unknown positions)".to_string());
+fn validate_wordle_input(guesses: &[GuessData]) -> Result<(), String> {
+    // Empty guesses are allowed - user wants initial suggestions
+    if guesses.is_empty() {
+        return Ok(());
     }
 
-    // Green letters should only contain letters and ?
-    let green_regex = Regex::new(r"^[a-z?]{5}$").unwrap();
-    if !green_regex.is_match(green) {
-        return Err("Green letters can only contain letters and ? characters".to_string());
-    }
+    for (i, guess_data) in guesses.iter().enumerate() {
+        let word = &guess_data.word;
+        let feedback = &guess_data.feedback;
 
-    // Grey and yellow letters should only contain letters
-    let letter_regex = Regex::new(r"^[a-z]*$").unwrap();
-    if !letter_regex.is_match(grey) {
-        return Err("Grey letters can only contain letters".to_string());
-    }
-    if !letter_regex.is_match(yellow) {
-        return Err("Yellow letters can only contain letters".to_string());
+        // Word must be exactly 5 characters
+        if word.len() != 5 {
+            return Err(format!("Guess {} must be exactly 5 characters", i + 1));
+        }
+
+        // Word should only contain letters
+        let word_regex = Regex::new(r"^[a-z]{5}$").unwrap();
+        if !word_regex.is_match(word) {
+            return Err(format!("Guess {} can only contain letters", i + 1));
+        }
+
+        // Feedback must be exactly 5 characters
+        if feedback.len() != 5 {
+            return Err(format!("Feedback for guess {} must be exactly 5 characters", i + 1));
+        }
+
+        // Feedback should only contain 0, 1, 2
+        let feedback_regex = Regex::new(r"^[012]{5}$").unwrap();
+        if !feedback_regex.is_match(feedback) {
+            return Err(format!("Feedback for guess {} can only contain 0 (grey), 1 (yellow), 2 (green)", i + 1));
+        }
     }
 
     Ok(())
@@ -63,68 +82,32 @@ pub async fn render() -> Result<HttpResponse> {
 
                 <div class=\"content\">
                     <div class=\"intro\">
-                        <h2 class=\"title\">🟩 Wordle <span style=\"color: #5dfa5c;\">Solver</span> 🟨</h2>
+                        <h2 class=\"title\">🎯 Wordle <span style=\"color: #5dfa5c;\">Solver</span> 🧩</h2>
                         <p>
-                            Enter your Wordle clues below to get word suggestions. Use the green letters for known positions,
-                            grey letters for letters not in the word, and yellow letters for letters in the word but wrong position.
+                            Enter your Wordle guesses and set the feedback colors. Click on letters to cycle through 
+                            Grey → Yellow → Green. Add more rows as needed for your game progress.
                         </p>
                     </div>
 
                     <div class=\"solver-form\">
                         <div class=\"form-container\">
-                            <div class=\"input-group\">
-                                <label for=\"green-input\" class=\"form-label\">
-                                    🟩 Green Letters (Known positions)
-                                </label>
-                                <input
-                                    type=\"text\"
-                                    id=\"green-input\"
-                                    class=\"wordle-input green-input\"
-                                    placeholder=\"Enter like: ba??n\"
-                                    maxlength=\"5\"
-                                    pattern=\"[a-zA-Z?]{{5}}\"
-                                    title=\"Exactly 5 characters: letters or ? for unknown positions\"
-                                >
-                                <small class=\"input-help\">Use ? for unknown positions (exactly 5 characters)</small>
+                            <div class=\"wordle-grid\" id=\"wordle-grid\">
+                                <!-- Initial row will be added by JavaScript -->
                             </div>
 
-                            <div class=\"input-group\">
-                                <label for=\"grey-input\" class=\"form-label\">
-                                    ⬜ Grey Letters (Not in word)
-                                </label>
-                                <input
-                                    type=\"text\"
-                                    id=\"grey-input\"
-                                    class=\"wordle-input grey-input\"
-                                    placeholder=\"Enter letters not in the word\"
-                                    pattern=\"[a-zA-Z]*\"
-                                    title=\"Only letters allowed\"
-                                >
-                                <small class=\"input-help\">Letters that are not in the target word</small>
-                            </div>
+                            <div class=\"controls\">
+                                <button id=\"add-row-btn\" class=\"add-row-button\" title=\"Add another guess row\">
+                                    ➕ Add Row
+                                </button>
 
-                            <div class=\"input-group\">
-                                <label for=\"yellow-input\" class=\"form-label\">
-                                    🟨 Yellow Letters (Wrong position)
-                                </label>
-                                <input
-                                    type=\"text\"
-                                    id=\"yellow-input\"
-                                    class=\"wordle-input yellow-input\"
-                                    placeholder=\"Enter letters in word but wrong position\"
-                                    pattern=\"[a-zA-Z]*\"
-                                    title=\"Only letters allowed\"
-                                >
-                                <small class=\"input-help\">Letters in the word but in wrong positions</small>
+                                <button id=\"solve-btn\" class=\"solve-button\">
+                                    <span class=\"button-text\">🔍 Get Suggestions</span>
+                                    <span class=\"loading-spinner\" style=\"display: none;\">
+                                        Analyzing...
+                                        <span class=\"loading-dots\"></span>
+                                    </span>
+                                </button>
                             </div>
-
-                            <button id=\"solve-btn\" class=\"solve-button\">
-                                <span class=\"button-text\">🔍 Find Words</span>
-                                <span class=\"loading-spinner\" style=\"display: none;\">
-                                    Solving puzzle...
-                                    <span class=\"loading-dots\"></span>
-                                </span>
-                            </button>
                         </div>
                     </div>
 
@@ -137,26 +120,62 @@ pub async fn render() -> Result<HttpResponse> {
                         <h3 class=\"info-title\">How to use</h3>
                         <div class=\"instructions\">
                             <div class=\"instruction-item\">
-                                <span class=\"instruction-icon\">🟩</span>
+                                <span class=\"instruction-icon\">⌨️</span>
                                 <div>
-                                    <strong>Green Letters:</strong> Enter the exact pattern with known letters in correct positions.
-                                    Use ? for unknown positions. Example: \"ba??n\" means B is first, A is second, N is last.
+                                    <strong>Enter Words:</strong> Type your Wordle guesses in the grid. Each row represents one guess.
                                 </div>
                             </div>
                             <div class=\"instruction-item\">
-                                <span class=\"instruction-icon\">⬜</span>
+                                <span class=\"instruction-icon\">🎨</span>
                                 <div>
-                                    <strong>Grey Letters:</strong> Enter all letters that you know are NOT in the target word.
-                                    Example: \"qwerty\" means none of these letters appear in the solution.
+                                    <strong>Set Colors:</strong> Click on each letter to cycle through colors:
+                                    <span class=\"color-example grey\">Grey</span> (not in word) → 
+                                    <span class=\"color-example yellow\">Yellow</span> (wrong position) → 
+                                    <span class=\"color-example green\">Green</span> (correct position)
                                 </div>
                             </div>
                             <div class=\"instruction-item\">
-                                <span class=\"instruction-icon\">🟨</span>
+                                <span class=\"instruction-icon\">➕</span>
                                 <div>
-                                    <strong>Yellow Letters:</strong> Enter letters that are in the word but in wrong positions.
-                                    The solver will find words containing these letters in different positions.
+                                    <strong>Add Rows:</strong> Click \"Add Row\" to add more guesses as you play through your Wordle game.
                                 </div>
                             </div>
+                            <div class=\"instruction-item\">
+                                <span class=\"instruction-icon\">🧠</span>
+                                <div>
+                                    <strong>Get Help:</strong> Click \"Get Suggestions\" to see the best next words based on your current game state.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class=\"color-legend\">
+                            <h4>Color Legend:</h4>
+                            <div class=\"legend-items\">
+                                <div class=\"legend-item\">
+                                    <div class=\"legend-tile grey\"></div>
+                                    <span>Grey - Letter not in word</span>
+                                </div>
+                                <div class=\"legend-item\">
+                                    <div class=\"legend-tile yellow\"></div>
+                                    <span>Yellow - Letter in word, wrong position</span>
+                                </div>
+                                <div class=\"legend-item\">
+                                    <div class=\"legend-tile green\"></div>
+                                    <span>Green - Letter in word, correct position</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class=\"trivia-section\">
+                        <h3 class=\"trivia-title\">🧠 Solver Trivia</h3>
+                        <div class=\"trivia-content\">
+                            <p>
+                                Although the words <strong>raise</strong>, <strong>slate</strong>, <strong>crate</strong>, <strong>irate</strong>, <strong>trace</strong>, <strong>arise</strong>, <strong>stare</strong>, <strong>snare</strong>, <strong>arose</strong> and <strong>least</strong> are the suggested starting words when considering entropy, in the worst case scenario you may need all 6 guesses to find the correct word using the solver.
+                            </p>
+                            <p>
+                                The words <strong>react</strong>, <strong>roast</strong>, <strong>alien</strong>, <strong>trail</strong>, <strong>snore</strong>, <strong>train</strong>, <strong>renal</strong>, <strong>rinse</strong>, <strong>solar</strong> and <strong>sonar</strong> have slightly worse starting entropy <strong>BUT</strong> you are guaranteed to always find the correct word in at most 5 steps using this solver and one of those words as starting word.
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -173,12 +192,10 @@ pub async fn render() -> Result<HttpResponse> {
 
 #[post("/api/wordle-solve")]
 pub async fn solve_wordle(data: web::Json<WordleRequest>) -> Result<HttpResponse> {
-    let green: String = data.green_letters.trim().to_lowercase();
-    let grey = data.grey_letters.trim().to_lowercase();
-    let yellow = data.yellow_letters.trim().to_lowercase();
+    let guesses = &data.guesses;
 
     // Validate inputs
-    if let Err(validation_error) = validate_wordle_input(&green, &grey, &yellow) {
+    if let Err(validation_error) = validate_wordle_input(guesses) {
         return Ok(HttpResponse::BadRequest().json(WordleResponse {
             success: false,
             message: validation_error,
@@ -186,15 +203,21 @@ pub async fn solve_wordle(data: web::Json<WordleRequest>) -> Result<HttpResponse
         }));
     }
 
-    // Transform ? to _ for the C++ binary
-    let green_transformed = green.replace('?', "_");
+    // Build command - if no guesses, just call without arguments for initial suggestions
+    let mut command = Command::new("./bin/wordle");
+    
+    if !guesses.is_empty() {
+        // Build command arguments: word1 feedback1 word2 feedback2 ...
+        let mut args = Vec::new();
+        for guess_data in guesses {
+            args.push(guess_data.word.clone());
+            args.push(guess_data.feedback.clone());
+        }
+        command.args(&args);
+    }
 
     // Call the C++ binary
-    let output = Command::new("./bin/wordle")
-        .arg(&green_transformed)
-        .arg(&grey)
-        .arg(&yellow)
-        .output();
+    let output = command.output();
 
     match output {
         Ok(output) => {
@@ -210,24 +233,39 @@ pub async fn solve_wordle(data: web::Json<WordleRequest>) -> Result<HttpResponse
                 }));
             }
 
-            // Parse the output - assuming each word is on a new line
+            // Parse the output - each line has "entropy word"
             let suggestions: Vec<String> = stdout
                 .lines()
                 .filter(|line| !line.trim().is_empty())
-                .map(|line| line.trim().to_uppercase())
+                .take(MAX_SUGGESTIONS) // Limit to top 20 suggestions
+                .map(|line| {
+                    // Extract just the word part (skip entropy)
+                    let parts: Vec<&str> = line.trim().split_whitespace().collect();
+                    if parts.len() >= 2 {
+                        parts[1].to_uppercase()
+                    } else {
+                        line.trim().to_uppercase()
+                    }
+                })
                 .collect();
 
             if suggestions.is_empty() {
                 return Ok(HttpResponse::Ok().json(WordleResponse {
                     success: false,
-                    message: "No words found matching your criteria. Try adjusting your clues.".to_string(),
+                    message: "No words found matching your criteria. Try adjusting your guesses.".to_string(),
                     suggestions: None,
                 }));
             }
 
+            let message = if guesses.is_empty() {
+                format!("Best {} starting word{}", suggestions.len(), if suggestions.len() == 1 { "" } else { "s" })
+            } else {
+                format!("{} next best guesses (from best to worst)", suggestions.len())
+            };
+
             Ok(HttpResponse::Ok().json(WordleResponse {
                 success: true,
-                message: format!("Found {} possible word{}", suggestions.len(), if suggestions.len() == 1 { "" } else { "s" }),
+                message,
                 suggestions: Some(suggestions),
             }))
         }
