@@ -120,7 +120,8 @@ vec<pair<str, double>> solver(const vec<str>& remaining){
             H -= p * log2(p);
         }
 
-        guessesAndEntropies.emplace_back(word, H);
+        if(H > 0)
+            guessesAndEntropies.emplace_back(word, H);
     }
 
     sort(guessesAndEntropies.begin(), guessesAndEntropies.end(), [&](const auto& a, const auto& b){
