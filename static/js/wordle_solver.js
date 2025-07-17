@@ -47,7 +47,7 @@ document.addEventListener('DOMContentLoaded', function() {
         hideResult();
 
         try {
-            const response = await fetch('/api/wordle-solve', {
+            const response = await fetch('/api/wordle', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

@@ -6,4 +6,4 @@
 6;My undergraduate thesis;The last step to finish my undergraduate course of Aerospace Engineering.;static/assets/posts_images/2001_space_odyssey_ship.png;image from 2001 space odyssey;Aerospace,Optimization,Python,C++;graduation_thesis
 7;Who Chat;Chat anonymously in a secure plataform.;static/assets/posts_images/question_mark.png;question mark;Rust,Encryption;who_chat
 8;Codeforces Rating Predictor;Predict your codeforces' rating 6 months in the future using state of the art machine learning techniques.;static/assets/posts_images/cf_minimal_logo.webp;Codeforces;Machine Learning;predict-codeforces-rating
-9;Wordle solver; Input the state of your wordle game and solve it in at most 5 moves using this solver.;static/assets/posts_images/wordle.png;Wordle logo;C++,Optimization;wordle-solver
+9;Wordle solver; Input the state of your wordle game and solve it in at most 5 moves using this solver.;static/assets/posts_images/wordle.png;Wordle logo;C++,Optimization;wordle

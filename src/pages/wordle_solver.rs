@@ -63,7 +63,7 @@ fn validate_wordle_input(guesses: &[GuessData]) -> Result<(), String> {
     Ok(())
 }
 
-#[get("/wordle-solver")]
+#[get("/wordle")]
 pub async fn render() -> Result<HttpResponse> {
     let html_content = format!("
         <html lang=\"en\">
@@ -190,7 +190,7 @@ pub async fn render() -> Result<HttpResponse> {
         .body(html_content))
 }
 
-#[post("/api/wordle-solve")]
+#[post("/api/wordle")]
 pub async fn solve_wordle(data: web::Json<WordleRequest>) -> Result<HttpResponse> {
     let guesses = &data.guesses;
 
