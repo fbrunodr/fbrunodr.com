@@ -1,11 +1,9 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-
 using str = string;
 template <typename T>
 using vec = vector<T>;
-
 
 vec<str> dictionary;
 
@@ -98,7 +96,7 @@ vec<str> loadWords(){
 }
 
 
-vec<pair<str, double>> solver(const vec<str>& remaining){
+vec<pair<str, double>> entropySolver(const vec<str>& remaining){
     const int R = (int)remaining.size();
     if(R == 1) return {{remaining.front(), 0.0}};
 
@@ -134,6 +132,125 @@ vec<pair<str, double>> solver(const vec<str>& remaining){
 }
 
 
+vec<pair<str, double>> productionSolver(const vec<str>& remaining){
+    const int R = (int)remaining.size();
+    if(R == 1) return {{remaining.front(), 0.0}};
+    if(R > 8) return entropySolver(remaining);
+
+    // minimize expected amount of moves
+    const double INF = 1e9;
+    vec<double> memo(1 << R, -1.0);
+    int startMask = (1 << R) - 1;
+
+    vec<pair<str,double>> guessesAndValue;
+
+    function<double(int)> dp = [&](int mask){
+        if(__builtin_popcount(mask) == 1)
+            return 1.0;
+        double& ans = memo[mask];
+        if(ans != -1.0)
+            return ans;
+        ans = INF;
+
+        for(const str& word : dictionary){
+            vec<int> bucket(1024, 0);
+
+            for(int i = 0; i < remaining.size(); i++){
+                if(!(mask & (1 << i))) continue;
+                int feedback = getFeedbackMask(word, remaining[i]);
+                bucket[feedback] |= 1 << i;
+            }
+
+            // does not help at all
+            if(any_of(bucket.begin(), bucket.end(), [&](int otherMask){ return otherMask == mask; })) continue;
+
+            const int GOT_IT_BUCKET = 0b1010101010;
+
+            double averageCase = 1.0; // have to make a move to go to the next state
+            int N = __builtin_popcount(mask);
+            for(int b = 0; b < 1024; b++){
+                if(b == GOT_IT_BUCKET) continue; // if we found the word we have 0 extra moves
+                int otherMask = bucket[b];
+                if(!otherMask) continue;
+                double probability = __builtin_popcount(otherMask) / (double)N;
+                averageCase += probability * dp(otherMask);
+            }
+            if(mask == startMask)
+                guessesAndValue.emplace_back(word, averageCase);
+            ans = min(ans, averageCase);
+        }
+        return ans;
+    };
+    dp(startMask);
+
+    sort(guessesAndValue.begin(), guessesAndValue.end(), [&](const auto& a, const auto& b){
+        return a.second < b.second;
+    });
+
+    return guessesAndValue;
+}
+
+
+vec<pair<str, double>> worstCaseNextSizeSolver(const vec<str>& remaining){
+    const int R = (int)remaining.size();
+    if(R == 1) return {{remaining.front(), 0.0}};
+
+    vec<pair<str, double>> guessesAndLargestGroupSize;
+    unordered_set<str> remainingSet(remaining.begin(), remaining.end());
+
+    for(const str& word : dictionary){
+        vec<int> bucket(1024, 0);
+
+        for(const str& target : remaining){
+            int feedback = getFeedbackMask(word, target);
+            bucket[feedback]++;
+        }
+
+        guessesAndLargestGroupSize.emplace_back(word, *max_element(bucket.begin(), bucket.end()));
+    }
+
+    sort(guessesAndLargestGroupSize.begin(), guessesAndLargestGroupSize.end(), [&](const auto& a, const auto& b){
+        if(a.second != b.second) return a.second > b.second;
+        // words in remaining have higher priority given tie
+        return remainingSet.count(a.first) > remainingSet.count(b.first);
+    });
+
+    return guessesAndLargestGroupSize;
+}
+
+
+vec<pair<str, double>> expectedNextSizeSolver(const vec<str>& remaining){
+    const int R = (int)remaining.size();
+    if(R == 1) return {{remaining.front(), 0.0}};
+
+    vec<pair<str, double>> guessesAndExpectedNextSize;
+    unordered_set<str> remainingSet(remaining.begin(), remaining.end());
+
+    for(const str& word : dictionary){
+        vec<int> bucket(1024, 0);
+
+        for(const str& target : remaining){
+            int feedback = getFeedbackMask(word, target);
+            bucket[feedback]++;
+        }
+
+        double expectedNextSize = 0.0;
+        for(int size : bucket)
+            expectedNextSize += size * size;
+
+        guessesAndExpectedNextSize.emplace_back(word, (double)expectedNextSize / (double)R);
+    }
+
+    sort(guessesAndExpectedNextSize.begin(), guessesAndExpectedNextSize.end(), [&](const auto& a, const auto& b){
+        if(a.second != b.second) return a.second > b.second;
+        // words in remaining have higher priority given tie
+        return remainingSet.count(a.first) > remainingSet.count(b.first);
+    });
+
+    return guessesAndExpectedNextSize;
+}
+
+
 int playGameAgainstTarget(
     const str &target,
     const str &startGuess,
@@ -161,11 +278,14 @@ int playGameAgainstTarget(
 void evaluateAllStartWords(function<vec<pair<str, double>>(const vec<str>&)> solver){
     for(const auto& [startWord, _] : solver(dictionary)){ // start from the best words according to entropy
         int worst = 0;
+        double expected = 0.0;
         for(const str& target : dictionary){
             int moves = playGameAgainstTarget(target, startWord, solver);
             worst = max(worst, moves);
+            expected += moves;
         }
-        cout << startWord << " " << worst << endl;
+        expected /= (double)dictionary.size();
+        cout << startWord << " " << worst << " " << expected << endl;
     }
 }
 
@@ -179,17 +299,22 @@ int feedbackToMask(const str& feedback){
 
 // int main(){
 //     dictionary = loadWords();
-//     evaluateAllStartWords(solver);
+//     evaluateAllStartWords(productionSolver);
 //     return 0;
 // }
 
 int main(int argc, char* argv[]){
-    dictionary = loadWords();
-
     if(argc % 2 != 1){
         cerr << "Usage: " << argv[0] << " <guess> <feedback> [...]\n";
         return 1;
     }
+
+    if(argc > 100){
+        cerr << "Too many arguments\n";
+        return 1;
+    }
+
+    dictionary = loadWords();
 
     vec<pair<str,int>> history;
     for(int i = 1; i < argc; i += 2){
@@ -200,14 +325,14 @@ int main(int argc, char* argv[]){
 
     vec<str> remaining = filterWords(dictionary, history);
     if(remaining.empty()){
-        cerr << "No words match the given feedback" << endl;
+        cerr << "No words match the given feedback\n";
         return 0;
     }
 
-    vec<pair<str, double>> guessesAndEntropies = solver(remaining);
+    vec<pair<str, double>> guessesAndValues = productionSolver(remaining);
     cout << fixed << setprecision(4);
-    for(const auto& [guess, entropy] : guessesAndEntropies)
-        cout << entropy << " " << guess << endl;
+    for(const auto& [guess, value] : guessesAndValues)
+        cout << value << " " << guess << '\n';
 
     return 0;
 }
