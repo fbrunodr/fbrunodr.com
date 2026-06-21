@@ -490,6 +490,158 @@ button.save:hover { background: #15803d; }
 .dash-figs .v.recebido { color: #16a34a; }
 .dash-figs .v.pendente { color: #ea580c; }
 
+/* ---------- Main tabs (Plantões / Despesas) ---------- */
+.main-tabs {
+  display: flex;
+  gap: 6px;
+  border-bottom: 2px solid #e2e8f0;
+  margin: 18px 0 22px;
+}
+
+.main-tab {
+  background: transparent;
+  color: #64748b;
+  font-weight: 600;
+  font-size: 1rem;
+  padding: 10px 22px;
+  border-radius: 8px 8px 0 0;
+  margin-bottom: -2px;
+  border-bottom: 2px solid transparent;
+}
+
+.main-tab:hover { background: transparent; color: #0f172a; }
+
+.main-tab.active {
+  color: #1d4ed8;
+  border-bottom-color: #2563eb;
+}
+
+/* ---------- Despesas toolbar ---------- */
+.despesas-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 8px 0 6px;
+}
+
+.despesas-toolbar .filtros {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.despesas-toolbar .toolbar-actions {
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+}
+
+.despesas-toolbar .open-form-btn { margin-top: 0; }
+
+.val.profissional { color: #7c3aed; }
+
+/* ---------- Category breakdown ---------- */
+.cat-breakdown {
+  flex: 1 1 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.cat-row {
+  display: grid;
+  grid-template-columns: 160px 1fr 120px;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.88rem;
+}
+
+.cat-row .cat-nome { color: #334155; font-weight: 600; }
+.cat-row .cat-val { text-align: right; color: #0f172a; font-weight: 600; }
+
+.cat-bar {
+  height: 8px;
+  background: #eef2f7;
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.cat-bar > div { height: 100%; background: #7c3aed; }
+
+/* ---------- Status pill / badges ---------- */
+.pill {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.pill.pago { background: #dcfce7; color: #166534; }
+.pill.previsto { background: #fef9c3; color: #854d0e; }
+
+tbody tr.previsto { background: #fafafa; }
+tbody tr.previsto:hover { background: #f1f5f9; }
+tbody tr.inativo { opacity: 0.55; }
+
+.badge-rec {
+  display: inline-block;
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #7c3aed;
+  background: #f3e8ff;
+  border-radius: 4px;
+  padding: 1px 6px;
+  vertical-align: middle;
+}
+
+.recorrentes-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 30px;
+}
+
+.recorrentes-head .open-form-btn { margin-top: 0; }
+
+/* ---------- Categorias manager ---------- */
+.cat-manage { padding: 18px 22px 22px; }
+
+.cat-add {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.cat-add input { flex: 1; }
+
+.cat-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cat-list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+}
+
+.cat-list .cat-item-nome { flex: 1; color: #1f2937; }
+
+.cat-list button { padding: 5px 12px; font-size: 0.8rem; }
+
 /* ---------- Mobile ---------- */
 @media (max-width: 640px) {
   .content { padding: 92px 12px 50px; }
@@ -538,4 +690,14 @@ button.save:hover { background: #15803d; }
   .field.wide { grid-column: span 1; }
 
   .modal-actions { padding: 14px 18px; }
+
+  /* Despesas */
+  .despesas-toolbar { flex-direction: column; align-items: stretch; }
+  .despesas-toolbar .filtros { display: grid; grid-template-columns: 1fr 1fr; }
+  .despesas-toolbar .toolbar-actions { justify-content: stretch; }
+  .despesas-toolbar .toolbar-actions button { flex: 1; }
+  .recorrentes-head { flex-direction: column; align-items: stretch; }
+  .recorrentes-head .open-form-btn { width: 100%; }
+  .cat-row { grid-template-columns: 1fr auto; }
+  .cat-row .cat-bar { display: none; }
 }

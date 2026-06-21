@@ -378,3 +378,394 @@ document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") closeForm();
 });
 load();
+
+
+/* =========================================================================
+   Despesas module
+   ========================================================================= */
+
+let categorias = [], catById = {}, despesas = [], recorrentes = [];
+let despesasLoaded = false, editingDespesaId = null, editingRecorrenteId = null;
+
+function showDespMsg(text, ok) {
+  const el = document.getElementById("despesas-msg");
+  el.textContent = text;
+  el.className = "msg " + (ok ? "ok" : "err");
+  if (text) setTimeout(() => { el.textContent = ""; el.className = "msg"; }, 4000);
+}
+
+// ---- main tab switching ----
+function setMainTab(tab) {
+  const isDesp = tab === "despesas";
+  document.getElementById("section-plantoes").style.display = isDesp ? "none" : "";
+  document.getElementById("section-despesas").style.display = isDesp ? "" : "none";
+  document.getElementById("maintab-plantoes").classList.toggle("active", !isDesp);
+  document.getElementById("maintab-despesas").classList.toggle("active", isDesp);
+  if (isDesp && !despesasLoaded) { despesasLoaded = true; initDespesas(); }
+}
+
+async function initDespesas() {
+  const mes = document.getElementById("d-mes");
+  if (!mes.value) {
+    const now = new Date();
+    mes.value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+  }
+  await loadCategorias();
+  await loadRecorrentes();
+  await loadDespesas();
+}
+
+// ---- categorias ----
+async function loadCategorias() {
+  try {
+    const res = await api("/lucasodon/api/categorias", "GET");
+    categorias = await res.json();
+    catById = {};
+    for (const c of categorias) catById[c.id] = c;
+    fillCategoriaSelects();
+    renderCatList();
+  } catch (e) { showDespMsg("Erro ao carregar categorias: " + e.message, false); }
+}
+
+function fillCategoriaSelects() {
+  const opts = categorias.map(c => `<option value="${c.id}">${esc(c.nome)}</option>`).join("");
+  const keep = (id, v) => { const el = document.getElementById(id); el.innerHTML = v; };
+  keep("dx-categoria", opts);
+  keep("rx-categoria", opts);
+  document.getElementById("d-filtro-categoria").innerHTML = `<option value="">Todas</option>` + opts;
+}
+
+function renderCatList() {
+  const ul = document.getElementById("cat-list");
+  ul.innerHTML = "";
+  for (const c of categorias) {
+    const li = document.createElement("li");
+    const span = document.createElement("span");
+    span.className = "cat-item-nome";
+    span.textContent = c.nome;
+    const ed = document.createElement("button");
+    ed.className = "edit"; ed.textContent = "Renomear"; ed.onclick = () => renomearCategoria(c);
+    const del = document.createElement("button");
+    del.className = "del"; del.textContent = "Excluir"; del.onclick = () => excluirCategoria(c);
+    li.append(span, ed, del);
+    ul.appendChild(li);
+  }
+}
+
+async function addCategoria() {
+  const input = document.getElementById("cat-novo");
+  const nome = input.value.trim();
+  if (!nome) return;
+  try {
+    await api("/lucasodon/api/categorias/create", "POST", { nome });
+    input.value = "";
+    await loadCategorias();
+  } catch (e) { showDespMsg("Erro: " + e.message, false); }
+}
+
+async function renomearCategoria(c) {
+  const nome = prompt("Novo nome da categoria:", c.nome);
+  if (!nome || !nome.trim()) return;
+  try {
+    await api("/lucasodon/api/categorias/update", "POST", { id: c.id, nome: nome.trim() });
+    await loadCategorias();
+    await loadDespesas();
+  } catch (e) { showDespMsg("Erro: " + e.message, false); }
+}
+
+async function excluirCategoria(c) {
+  if (!confirm(`Excluir a categoria "${c.nome}"? As despesas dela vão para "Outros".`)) return;
+  try {
+    await api("/lucasodon/api/categorias/delete", "POST", { id: c.id });
+    await loadCategorias();
+    await loadDespesas();
+  } catch (e) { showDespMsg("Erro: " + e.message, false); }
+}
+
+// ---- despesas: load + render ----
+function despesaRange() {
+  const tipo = document.getElementById("d-periodo-tipo").value;
+  const mes = document.getElementById("d-mes").value;
+  const [y, m] = mes.split("-").map(Number);
+  if (tipo === "ano") return { inicio: `${y}-01-01`, fim: `${y}-12-31` };
+  const last = new Date(y, m, 0).getDate();
+  const mm = String(m).padStart(2, "0");
+  return { inicio: `${y}-${mm}-01`, fim: `${y}-${mm}-${String(last).padStart(2, "0")}` };
+}
+
+async function loadDespesas() {
+  const { inicio, fim } = despesaRange();
+  const qs = new URLSearchParams({ inicio, fim });
+  const cat = document.getElementById("d-filtro-categoria").value;
+  const tipo = document.getElementById("d-filtro-tipo").value;
+  if (cat) qs.set("categoria_id", cat);
+  if (tipo && tipo !== "todos") qs.set("tipo", tipo);
+  try {
+    const res = await api(`/lucasodon/api/despesas?${qs.toString()}`, "GET");
+    despesas = await res.json();
+    renderDespesas();
+  } catch (e) { showDespMsg("Erro ao carregar: " + e.message, false); }
+}
+
+function renderDespesas() {
+  let total = 0, pessoal = 0, profissional = 0;
+  const porCat = {};
+  for (const d of despesas) {
+    total += d.valor;
+    if (d.tipo === "profissional") profissional += d.valor; else pessoal += d.valor;
+    const key = d.categoria_id || 0;
+    porCat[key] = (porCat[key] || 0) + d.valor;
+  }
+
+  const cards = `
+    <div class="card"><div class="lbl">Total do período</div><div class="val">${brl(total)}</div></div>
+    <div class="card"><div class="lbl">Pessoal</div><div class="val">${brl(pessoal)}</div></div>
+    <div class="card"><div class="lbl">Profissional</div><div class="val profissional">${brl(profissional)}</div></div>`;
+
+  const linhas = Object.entries(porCat).sort((a, b) => b[1] - a[1]).map(([id, v]) => {
+    const nome = id === "0" ? "Sem categoria" : (catById[id] ? catById[id].nome : "—");
+    const p = total > 0 ? (v / total) * 100 : 0;
+    return `<div class="cat-row"><span class="cat-nome">${esc(nome)}</span>
+      <div class="cat-bar"><div style="width:${p}%"></div></div>
+      <span class="cat-val">${brl(v)}</span></div>`;
+  }).join("");
+
+  document.getElementById("despesas-totais").innerHTML = cards +
+    `<div class="cat-breakdown">${linhas || '<span class="dash-empty">Sem despesas no período.</span>'}</div>`;
+
+  const body = document.getElementById("despesas-body");
+  body.innerHTML = "";
+  if (!despesas.length) {
+    body.innerHTML = `<tr><td colspan="7" class="dash-empty">Sem despesas no período.</td></tr>`;
+    return;
+  }
+  despesas.forEach(d => body.appendChild(despesaRow(d)));
+}
+
+function despesaRow(d) {
+  const tr = document.createElement("tr");
+  if (d.status === "previsto") tr.className = "previsto";
+  const catNome = d.categoria_id && catById[d.categoria_id] ? catById[d.categoria_id].nome : "—";
+  tr.innerHTML = `
+    <td>${fmtDate(d.data)}</td>
+    <td>${esc(d.descricao)}${d.recorrente_id ? ' <span class="badge-rec">fixa</span>' : ""}</td>
+    <td>${esc(catNome)}</td>
+    <td>${d.tipo === "profissional" ? "Profissional" : "Pessoal"}</td>
+    <td>${brl(d.valor)}</td>
+    <td><span class="pill ${d.status}">${d.status === "pago" ? "Pago" : "Previsto"}</span></td>`;
+  const acts = document.createElement("td");
+  acts.className = "actions";
+  if (d.status === "previsto") {
+    const pay = document.createElement("button");
+    pay.className = "save"; pay.textContent = "Pagar"; pay.onclick = () => pagarDespesa(d);
+    acts.appendChild(pay);
+  }
+  const ed = document.createElement("button");
+  ed.className = "edit"; ed.textContent = "Editar"; ed.onclick = () => openDespesa(d);
+  const del = document.createElement("button");
+  del.className = "del"; del.textContent = "Excluir"; del.onclick = () => removeDespesa(d);
+  acts.append(ed, del);
+  tr.appendChild(acts);
+  return tr;
+}
+
+async function pagarDespesa(d) {
+  try {
+    await api("/lucasodon/api/despesas/update", "POST", {
+      id: d.id, valor: d.valor, data: d.data, descricao: d.descricao,
+      categoria_id: d.categoria_id, tipo: d.tipo, status: "pago", observacoes: d.observacoes,
+    });
+    showDespMsg("Despesa marcada como paga.", true);
+    await loadDespesas();
+  } catch (e) { showDespMsg("Erro: " + e.message, false); }
+}
+
+async function removeDespesa(d) {
+  const msg = d.recorrente_id
+    ? "Excluir esta ocorrência da despesa fixa? Ela não será gerada de novo."
+    : "Excluir esta despesa?";
+  if (!confirm(msg)) return;
+  try {
+    await api("/lucasodon/api/despesas/delete", "POST", { id: d.id });
+    showDespMsg("Despesa excluída.", true);
+    await loadDespesas();
+  } catch (e) { showDespMsg("Erro: " + e.message, false); }
+}
+
+// ---- despesa modal ----
+function openDespesa(d) {
+  editingDespesaId = d ? d.id : null;
+  document.getElementById("despesa-modal-title").textContent = d ? "Editar despesa" : "Nova despesa";
+  document.getElementById("dx-data").value = d ? d.data : "";
+  document.getElementById("dx-valor").value = d ? d.valor : "";
+  document.getElementById("dx-descricao").value = d ? (d.descricao || "") : "";
+  document.getElementById("dx-categoria").value = d && d.categoria_id ? String(d.categoria_id) : "";
+  document.getElementById("dx-tipo").value = d ? d.tipo : "pessoal";
+  document.getElementById("dx-status").value = d ? d.status : "pago";
+  document.getElementById("dx-observacoes").value = d ? (d.observacoes || "") : "";
+  document.getElementById("despesa-modal").classList.add("open");
+}
+
+function closeDespesa() { document.getElementById("despesa-modal").classList.remove("open"); }
+
+async function saveDespesa() {
+  const data = document.getElementById("dx-data").value;
+  const valor = parseFloat(document.getElementById("dx-valor").value) || 0;
+  if (!data) { showDespMsg("Informe a data.", false); return; }
+  if (valor <= 0) { showDespMsg("Informe um valor.", false); return; }
+  const catVal = document.getElementById("dx-categoria").value;
+  const body = {
+    valor, data,
+    descricao: document.getElementById("dx-descricao").value.trim() || null,
+    categoria_id: catVal ? Number(catVal) : null,
+    tipo: document.getElementById("dx-tipo").value,
+    status: document.getElementById("dx-status").value,
+    observacoes: document.getElementById("dx-observacoes").value.trim() || null,
+  };
+  try {
+    if (editingDespesaId) await api("/lucasodon/api/despesas/update", "POST", Object.assign({ id: editingDespesaId }, body));
+    else await api("/lucasodon/api/despesas/create", "POST", body);
+    closeDespesa();
+    showDespMsg("Despesa salva.", true);
+    await loadDespesas();
+  } catch (e) { showDespMsg("Erro: " + e.message, false); }
+}
+
+// ---- recorrentes ----
+async function loadRecorrentes() {
+  try {
+    const res = await api("/lucasodon/api/recorrentes", "GET");
+    recorrentes = await res.json();
+    renderRecorrentes();
+  } catch (e) { showDespMsg("Erro ao carregar recorrentes: " + e.message, false); }
+}
+
+function renderRecorrentes() {
+  const body = document.getElementById("recorrentes-body");
+  body.innerHTML = "";
+  if (!recorrentes.length) {
+    body.innerHTML = `<tr><td colspan="9" class="dash-empty">Nenhuma despesa fixa cadastrada.</td></tr>`;
+    return;
+  }
+  for (const r of recorrentes) body.appendChild(recorrenteRow(r));
+}
+
+function recorrenteRow(r) {
+  const tr = document.createElement("tr");
+  if (!r.ativo) tr.className = "inativo";
+  const cat = r.categoria_id && catById[r.categoria_id] ? catById[r.categoria_id].nome : "—";
+  const venc = r.periodicidade === "anual"
+    ? `dia ${r.dia_vencimento} de ${MESES[(r.mes_vencimento || 1) - 1]}`
+    : `dia ${r.dia_vencimento}`;
+  const vig = `${fmtDate(r.data_inicio)} – ${r.data_fim ? fmtDate(r.data_fim) : "..."}`;
+  tr.innerHTML = `
+    <td>${esc(r.descricao)}</td>
+    <td>${esc(cat)}</td>
+    <td>${r.tipo === "profissional" ? "Profissional" : "Pessoal"}</td>
+    <td>${brl(r.valor)}</td>
+    <td>${r.periodicidade === "anual" ? "Anual" : "Mensal"}</td>
+    <td>${venc}</td>
+    <td>${vig}</td>
+    <td>${r.ativo ? "Sim" : "Não"}</td>`;
+  const acts = document.createElement("td");
+  acts.className = "actions";
+  const ed = document.createElement("button");
+  ed.className = "edit"; ed.textContent = "Editar"; ed.onclick = () => openRecorrente(r);
+  const del = document.createElement("button");
+  del.className = "del"; del.textContent = "Excluir"; del.onclick = () => removeRecorrente(r);
+  acts.append(ed, del);
+  tr.appendChild(acts);
+  return tr;
+}
+
+function toggleMesField() {
+  document.getElementById("rx-mes-field").style.display =
+    document.getElementById("rx-periodicidade").value === "anual" ? "" : "none";
+}
+
+function openRecorrente(r) {
+  editingRecorrenteId = r ? r.id : null;
+  document.getElementById("recorrente-modal-title").textContent = r ? "Editar recorrente" : "Nova recorrente";
+  document.getElementById("rx-descricao").value = r ? r.descricao : "";
+  document.getElementById("rx-valor").value = r ? r.valor : "";
+  document.getElementById("rx-categoria").value = r && r.categoria_id ? String(r.categoria_id) : "";
+  document.getElementById("rx-tipo").value = r ? r.tipo : "pessoal";
+  document.getElementById("rx-periodicidade").value = r ? r.periodicidade : "mensal";
+  document.getElementById("rx-dia").value = r ? r.dia_vencimento : "";
+  document.getElementById("rx-mes").value = r && r.mes_vencimento ? String(r.mes_vencimento) : "1";
+  document.getElementById("rx-inicio").value = r ? r.data_inicio : "";
+  document.getElementById("rx-fim").value = r && r.data_fim ? r.data_fim : "";
+  document.getElementById("rx-ativo").checked = r ? r.ativo : true;
+  toggleMesField();
+  document.getElementById("recorrente-modal").classList.add("open");
+}
+
+function closeRecorrente() { document.getElementById("recorrente-modal").classList.remove("open"); }
+
+async function saveRecorrente() {
+  const descricao = document.getElementById("rx-descricao").value.trim();
+  const valor = parseFloat(document.getElementById("rx-valor").value) || 0;
+  const dia = parseInt(document.getElementById("rx-dia").value, 10) || 0;
+  const inicio = document.getElementById("rx-inicio").value;
+  const periodicidade = document.getElementById("rx-periodicidade").value;
+  if (!descricao) { showDespMsg("Informe a descrição.", false); return; }
+  if (valor <= 0) { showDespMsg("Informe um valor.", false); return; }
+  if (dia < 1 || dia > 31) { showDespMsg("Dia de vencimento inválido (1–31).", false); return; }
+  if (!inicio) { showDespMsg("Informe a data de início.", false); return; }
+  const catVal = document.getElementById("rx-categoria").value;
+  const body = {
+    descricao, valor,
+    categoria_id: catVal ? Number(catVal) : null,
+    tipo: document.getElementById("rx-tipo").value,
+    periodicidade,
+    dia_vencimento: dia,
+    mes_vencimento: periodicidade === "anual" ? Number(document.getElementById("rx-mes").value) : null,
+    data_inicio: inicio,
+    data_fim: document.getElementById("rx-fim").value || null,
+    ativo: document.getElementById("rx-ativo").checked,
+  };
+  try {
+    if (editingRecorrenteId) await api("/lucasodon/api/recorrentes/update", "POST", Object.assign({ id: editingRecorrenteId }, body));
+    else await api("/lucasodon/api/recorrentes/create", "POST", body);
+    closeRecorrente();
+    showDespMsg("Despesa fixa salva.", true);
+    await loadRecorrentes();
+    await loadDespesas();
+  } catch (e) { showDespMsg("Erro: " + e.message, false); }
+}
+
+async function removeRecorrente(r) {
+  if (!confirm("Excluir esta despesa fixa? Ocorrências futuras ainda não pagas serão removidas.")) return;
+  try {
+    await api("/lucasodon/api/recorrentes/delete", "POST", { id: r.id });
+    showDespMsg("Despesa fixa excluída.", true);
+    await loadRecorrentes();
+    await loadDespesas();
+  } catch (e) { showDespMsg("Erro: " + e.message, false); }
+}
+
+// ---- wiring ----
+function bindModalClose(modalId, ...closers) {
+  const modal = document.getElementById(modalId);
+  closers.forEach(id => document.getElementById(id).addEventListener("click", () => modal.classList.remove("open")));
+  modal.addEventListener("click", (e) => { if (e.target.id === modalId) modal.classList.remove("open"); });
+}
+
+document.getElementById("maintab-plantoes").addEventListener("click", () => setMainTab("plantoes"));
+document.getElementById("maintab-despesas").addEventListener("click", () => setMainTab("despesas"));
+
+["d-periodo-tipo", "d-mes", "d-filtro-categoria", "d-filtro-tipo"].forEach(id =>
+  document.getElementById(id).addEventListener("change", loadDespesas));
+
+document.getElementById("open-despesa-btn").addEventListener("click", () => openDespesa(null));
+document.getElementById("save-despesa-btn").addEventListener("click", saveDespesa);
+bindModalClose("despesa-modal", "close-despesa-btn", "cancel-despesa-btn");
+
+document.getElementById("open-recorrente-btn").addEventListener("click", () => openRecorrente(null));
+document.getElementById("save-recorrente-btn").addEventListener("click", saveRecorrente);
+document.getElementById("rx-periodicidade").addEventListener("change", toggleMesField);
+bindModalClose("recorrente-modal", "close-recorrente-btn", "cancel-recorrente-btn");
+
+document.getElementById("open-categorias-btn").addEventListener("click", () => document.getElementById("categorias-modal").classList.add("open"));
+document.getElementById("cat-add-btn").addEventListener("click", addCategoria);
+bindModalClose("categorias-modal", "close-categorias-btn");
