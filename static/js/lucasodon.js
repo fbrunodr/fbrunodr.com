@@ -28,6 +28,15 @@ function fmtDate(iso) {
   return `${parts[2]}/${parts[1]}/${parts[0]}`;
 }
 
+// True when an ISO yyyy-mm-dd date is strictly after today (shift hasn't
+// happened yet). String comparison is safe for the yyyy-mm-dd format.
+function isFuture(iso) {
+  if (!iso) return false;
+  const now = new Date();
+  const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+  return iso > today;
+}
+
 function showMsg(text, ok) {
   const el = document.getElementById("msg");
   el.textContent = text;
@@ -167,7 +176,7 @@ function setView(view) {
 
 function rowView(p, num) {
   const tr = document.createElement("tr");
-  tr.className = p.recebido ? "recebido" : "pendente";
+  tr.className = isFuture(p.data) ? "futuro" : (p.recebido ? "recebido" : "pendente");
   tr.innerHTML = `
     <td>${num}</td>
     <td>${fmtDate(p.data)}</td>

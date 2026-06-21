@@ -335,8 +335,10 @@ tbody td {
 
 tbody tr.recebido { background: #ecfdf5; }
 tbody tr.pendente { background: #fff7ed; }
+tbody tr.futuro { background: #f1f5f9; }
 tbody tr.recebido:hover { background: #d1fae5; }
 tbody tr.pendente:hover { background: #ffedd5; }
+tbody tr.futuro:hover { background: #e2e8f0; }
 
 td.actions { display: flex; gap: 7px; }
 
