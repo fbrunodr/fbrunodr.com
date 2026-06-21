@@ -1,2 +1,6 @@
 /target
 /bin
+/bucket/lucasodon.db
+/bucket/lucasodon_password.txt
+.DS_Store
+**/.DS_Store

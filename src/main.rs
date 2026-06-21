@@ -11,6 +11,7 @@ use pages::graduation_thesis;
 use pages::who_chat;
 use pages::predict_codeforces_rating;
 use pages::wordle_solver;
+use pages::lucasodon;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -29,6 +30,13 @@ async fn main() -> std::io::Result<()> {
             .service(predict_codeforces_rating::predict_rating)
             .service(wordle_solver::render)
             .service(wordle_solver::solve_wordle)
+            .service(lucasodon::render)
+            .service(lucasodon::login)
+            .service(lucasodon::logout)
+            .service(lucasodon::list)
+            .service(lucasodon::create)
+            .service(lucasodon::update)
+            .service(lucasodon::delete)
     })
     .bind(("127.0.0.1", 8080))?
     .run()
