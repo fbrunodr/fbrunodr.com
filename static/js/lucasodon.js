@@ -1,4 +1,4 @@
-const PERIODOS = ["Diurno", "Noturno", "Cinderela", "24 noturno"];
+const PERIODOS = ["Diurno", "Noturno", "Cinderela", "24hrs", "24hrs invertido"];
 const TIPOS = ["PA", "MFC"];
 
 let plantoes = [];
@@ -90,10 +90,27 @@ function renderTotals() {
 
 function render() {
   renderTotals();
+  renderLocaisDatalist();
   const body = document.getElementById("plantoes-body");
   body.innerHTML = "";
   plantoes.forEach((p, i) => body.appendChild(rowView(p, i + 1)));
   renderDashboard();
+}
+
+// Autocomplete suggestions for the Local field: distinct locals used in the
+// last 12 months. The user can still type a brand-new place.
+function renderLocaisDatalist() {
+  const now = new Date();
+  const c = new Date(now.getFullYear(), now.getMonth() - 12, now.getDate());
+  const cutoff = `${c.getFullYear()}-${String(c.getMonth() + 1).padStart(2, "0")}-${String(c.getDate()).padStart(2, "0")}`;
+
+  const locais = new Set();
+  for (const p of plantoes) {
+    if (p.local && p.data >= cutoff) locais.add(p.local);
+  }
+
+  document.getElementById("locais-list").innerHTML =
+    [...locais].sort().map(l => `<option value="${esc(l)}"></option>`).join("");
 }
 
 const MESES = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
@@ -216,7 +233,7 @@ function rowEdit(p, num) {
   tr.innerHTML = `
     <td>${num}</td>
     <td><input type="date" data-k="data" value="${esc(p.data)}"></td>
-    <td><input type="text" data-k="local" value="${esc(p.local)}"></td>
+    <td><input type="text" data-k="local" list="locais-list" value="${esc(p.local)}"></td>
     <td><select data-k="mfc_pa">${selectHtml(TIPOS, p.mfc_pa)}</select></td>
     <td><input type="number" step="0.5" data-k="duracao_h" value="${p.duracao_h}"></td>
     <td><select data-k="periodo">${selectHtml(PERIODOS, p.periodo)}</select></td>

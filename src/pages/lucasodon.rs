@@ -329,7 +329,7 @@ fn app_page() -> String {
                             </div>
                             <div class=\"form-card\">
                                 <div class=\"field\"><label>Data</label><input type=\"date\" id=\"f-data\"></div>
-                                <div class=\"field\"><label>Local</label><input type=\"text\" id=\"f-local\" placeholder=\"FAM Barrinha\"></div>
+                                <div class=\"field\"><label>Local</label><input type=\"text\" id=\"f-local\" list=\"locais-list\" placeholder=\"FAM Barrinha\"></div>
                                 <div class=\"field\"><label>MFC/PA</label>
                                     <select id=\"f-mfc_pa\"><option>PA</option><option>MFC</option></select>
                                 </div>
@@ -337,7 +337,8 @@ fn app_page() -> String {
                                 <div class=\"field\"><label>Per&iacute;odo</label>
                                     <select id=\"f-periodo\">
                                         <option>Diurno</option><option>Noturno</option>
-                                        <option>Cinderela</option><option>24 noturno</option>
+                                        <option>Cinderela</option><option>24hrs</option>
+                                        <option>24hrs invertido</option>
                                     </select>
                                 </div>
                                 <div class=\"field\"><label>Valor (R$)</label><input type=\"number\" step=\"0.01\" id=\"f-valor\" placeholder=\"1200\"></div>
@@ -352,6 +353,8 @@ fn app_page() -> String {
                             </div>
                         </div>
                     </div>
+
+                    <datalist id=\"locais-list\"></datalist>
 
                     <div class=\"view-toggle\">
                         <button id=\"tab-table\" class=\"view-btn active\" type=\"button\">Tabela</button>
