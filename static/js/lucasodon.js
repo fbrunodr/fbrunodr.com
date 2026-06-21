@@ -179,7 +179,7 @@ function rowView(p, num) {
     <td>${brl(p.valor_hora)}</td>
     <td>${fmtDate(p.previsao_pagamento)}</td>
     <td>${p.recebido ? "Sim" : "N&atilde;o"}</td>
-    <td>${esc(p.mes_ano_pagamento)}</td>
+    <td>${fmtDate(p.mes_ano_pagamento)}</td>
     <td>${esc(p.observacoes)}</td>
   `;
   const actions = document.createElement("td");
@@ -215,7 +215,7 @@ function rowEdit(p, num) {
     <td>-</td>
     <td><input type="date" data-k="previsao_pagamento" value="${esc(p.previsao_pagamento)}"></td>
     <td><input type="checkbox" data-k="recebido"${p.recebido ? " checked" : ""}></td>
-    <td><input type="text" data-k="mes_ano_pagamento" value="${esc(p.mes_ano_pagamento)}"></td>
+    <td><input type="date" data-k="mes_ano_pagamento" value="${esc(p.mes_ano_pagamento)}"></td>
     <td><input type="text" data-k="observacoes" value="${esc(p.observacoes)}"></td>
   `;
   // Auto-fill expected payment one month after the shift date.

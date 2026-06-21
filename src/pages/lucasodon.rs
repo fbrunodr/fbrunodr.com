@@ -342,7 +342,7 @@ fn app_page() -> String {
                                 </div>
                                 <div class=\"field\"><label>Valor (R$)</label><input type=\"number\" step=\"0.01\" id=\"f-valor\" placeholder=\"1200\"></div>
                                 <div class=\"field\"><label>Previs&atilde;o pagamento</label><input type=\"date\" id=\"f-previsao_pagamento\"></div>
-                                <div class=\"field\"><label>M&ecirc;s/Ano pagamento</label><input type=\"text\" id=\"f-mes_ano_pagamento\" placeholder=\"julho/2026\"></div>
+                                <div class=\"field\"><label>Dia de pagamento</label><input type=\"date\" id=\"f-mes_ano_pagamento\"></div>
                                 <div class=\"field checkbox\"><label>Recebido?</label><input type=\"checkbox\" id=\"f-recebido\"></div>
                                 <div class=\"field wide\"><label>Observa&ccedil;&otilde;es</label><input type=\"text\" id=\"f-observacoes\"></div>
                             </div>
@@ -365,7 +365,7 @@ fn app_page() -> String {
                                     <th>#</th><th>Data</th><th>Local</th><th>MFC/PA</th>
                                     <th>Dura&ccedil;&atilde;o</th><th>Per&iacute;odo</th><th>Valor</th>
                                     <th>R$/h</th><th>Previs&atilde;o</th><th>Recebido</th>
-                                    <th>M&ecirc;s/Ano</th><th>Observa&ccedil;&otilde;es</th><th></th>
+                                    <th>Dia de pagamento</th><th>Observa&ccedil;&otilde;es</th><th></th>
                                 </tr>
                             </thead>
                             <tbody id=\"plantoes-body\"></tbody>
