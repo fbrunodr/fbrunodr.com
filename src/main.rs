@@ -12,6 +12,7 @@ use pages::who_chat;
 use pages::predict_codeforces_rating;
 use pages::wordle_solver;
 use pages::lucasodon;
+use pages::comunicacao_efetiva;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -49,6 +50,7 @@ async fn main() -> std::io::Result<()> {
             .service(lucasodon::despesa_create)
             .service(lucasodon::despesa_update)
             .service(lucasodon::despesa_delete)
+            .service(comunicacao_efetiva::render)
     })
     .bind(("127.0.0.1", 8080))?
     .run()

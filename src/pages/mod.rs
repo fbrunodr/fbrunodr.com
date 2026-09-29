@@ -6,3 +6,4 @@ pub mod who_chat;
 pub mod predict_codeforces_rating;
 pub mod wordle_solver;
 pub mod lucasodon;
+pub mod comunicacao_efetiva;
