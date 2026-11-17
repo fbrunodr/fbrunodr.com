@@ -109,7 +109,8 @@ fn build(version: &str, out: &Path) -> Result<(), String> {
     let lock = fs::read_to_string(repo.join("package-lock.json")).unwrap_or_default();
     let had = fs::read_to_string(root.join("installed.lock")).unwrap_or_default();
     if lock != had || !repo.join("node_modules").exists() {
-        run(Command::new("npm").arg("ci").arg("--no-audit").arg("--no-fund").current_dir(&repo))?;
+        // (--ignore-scripts: no package's own install script is run on this server.)
+        run(Command::new("npm").args(["ci", "--ignore-scripts", "--no-audit", "--no-fund"]).current_dir(&repo))?;
         fs::write(root.join("installed.lock"), &lock).map_err(|e| e.to_string())?;
     }
     let tmp = root.join("builds").join(format!(".building-{}", version));
