@@ -7,3 +7,4 @@
 7;Who Chat;Chat anonymously in a secure plataform.;static/assets/posts_images/question_mark.png;question mark;Rust,Encryption;who_chat
 8;Codeforces Rating Predictor;Predict your codeforces' rating 6 months in the future using state of the art machine learning techniques.;static/assets/posts_images/cf_minimal_logo.webp;Codeforces;Machine Learning;predict-codeforces-rating
 9;Wordle solver; Input the state of your wordle game and solve it in at most 5 moves using this solver.;static/assets/posts_images/wordle.png;Wordle logo;C++,Optimization;wordle
+10;Human craft;A civilization like game played on a round world: found cities, research, trade, fight and outlast rival civilizations, on generated continents or on the Earth. Free, and it runs in the browser.;static/assets/posts_images/humancraft.png;A world seen from orbit at dawn, the game's opening backdrop;TypeScript,Game Development,AI;humancraft

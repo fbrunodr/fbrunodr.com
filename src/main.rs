@@ -13,6 +13,7 @@ use pages::predict_codeforces_rating;
 use pages::wordle_solver;
 use pages::lucasodon;
 use pages::comunicacao_efetiva;
+use pages::humancraft;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -51,6 +52,9 @@ async fn main() -> std::io::Result<()> {
             .service(lucasodon::despesa_update)
             .service(lucasodon::despesa_delete)
             .service(comunicacao_efetiva::render)
+            .service(humancraft::render)
+            .service(humancraft::render_slash)
+            .service(humancraft::serve)
     })
     .bind(("127.0.0.1", 8080))?
     .run()
