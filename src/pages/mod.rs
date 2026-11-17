@@ -7,3 +7,4 @@ pub mod predict_codeforces_rating;
 pub mod wordle_solver;
 pub mod lucasodon;
 pub mod comunicacao_efetiva;
+pub mod humancraft;
