@@ -174,7 +174,12 @@ pub async fn render(q: web::Query<Which>) -> Result<HttpResponse> {
 
 #[get("/humancraft/")]
 pub async fn render_slash(q: web::Query<Which>) -> Result<HttpResponse> {
-    let query = match (&q.v, q.rules) { (Some(v), _) => format!("?v={}", v), (None, Some(x)) => format!("?rules={}", x), _ => String::new() };
+    // (Only a version's own name is passed on: nothing a visitor typed goes into the header as it came.)
+    let query = match (&q.v, q.rules) {
+        (Some(v), _) if v == MAIN || release(v).is_some() => format!("?v={}", v),
+        (None, Some(x)) => format!("?rules={}", x),
+        _ => String::new(),
+    };
     Ok(HttpResponse::Found().insert_header((header::LOCATION, format!("/humancraft{}", query))).finish())
 }
 
@@ -228,4 +233,20 @@ pub async fn serve(req: HttpRequest, path: web::Path<(String, String)>) -> Resul
     let lasting = version != MAIN && wanted.starts_with("assets/");
     res.headers_mut().insert(header::CACHE_CONTROL, header::HeaderValue::from_static(if lasting { "public, max-age=31536000, immutable" } else { "no-cache" }));
     Ok(res)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::release;
+
+    // A version's name is all that ever reaches a command or a path: "v", digits, a dot, digits, and nothing else.
+    #[test]
+    fn only_a_release_name_passes() {
+        assert_eq!(release("v0.0"), Some((0, 0)));
+        assert_eq!(release("v12.345"), Some((12, 345)));
+        for bad in ["", "v", "v1", "v1.", "v.1", "1.0", "V1.0", "v1.0.0", "v1.0 ", " v1.0", "v1.0\n", "v-1.0", "v+1.0", "v1.0;ls", "v1.0/..", "../v1.0",
+            "v1.0$(id)", "v1.0`id`", "v1.0|id", "v1.0&&id", "v1.0 --upload-pack=x", "--help", "v1.0\0", "v１.０", "v1e3.0", "v0x1.0", "v1234567.0", "main", "refs/tags/v1.0"] {
+            assert_eq!(release(bad), None, "{:?} must not pass", bad);
+        }
+    }
 }
