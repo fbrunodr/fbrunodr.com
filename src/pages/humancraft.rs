@@ -5,13 +5,13 @@
 //   /humancraft?rules=0          -> the latest release of that version of the rules (v0.*):
 //                                   what a saved game asks for (its "version" field)
 //   /humancraft/v0.3/...         -> that release's files
-//   /humancraft/main/...         -> the main branch as it stands (a preview; while there is no
-//                                   release yet, the latest is this)
+//
+// Only releases are served: the main branch may stand at a half-made state, and is never built here.
 //
 // A version is built once, the first time it is asked for: the tag is checked out in a clone
 // of the game's repository (bucket/humancraft/repo), built with its own tools, and the
 // result kept (bucket/humancraft/builds/<version>). A release never changes, so its build
-// is kept for good; the main branch is built again when it has moved on. While a build
+// is kept for good. While a build
 // runs (some seconds; a minute the first time, when the game's tools are installed), the
 // visitor sees a page that waits and reloads itself.
 
@@ -29,8 +29,7 @@ use serde::Deserialize;
 
 const REPO_URL: &str = "https://github.com/fbrunodr/humancraft.git";
 const ROOT: &str = "bucket/humancraft";
-const MAIN: &str = "main";
-// How long what the repository holds (its tags, where main stands) is taken on trust.
+// How long what the repository holds (its tags) is taken on trust.
 const REFS_FOR: Duration = Duration::from_secs(60);
 
 // ---------- versions ----------
@@ -43,7 +42,7 @@ fn release(name: &str) -> Option<(u32, u32)> {
     Some((x.parse().ok()?, y.parse().ok()?))
 }
 
-struct Refs { at: Instant, releases: Vec<(u32, u32)>, main: String }
+struct Refs { at: Instant, releases: Vec<(u32, u32)> }
 
 fn run(cmd: &mut Command) -> Result<String, String> {
     let out = cmd.output().map_err(|e| format!("{:?}: {}", cmd.get_program(), e))?;
@@ -53,26 +52,24 @@ fn run(cmd: &mut Command) -> Result<String, String> {
     Ok(String::from_utf8_lossy(&out.stdout).to_string())
 }
 
-// The releases there are and the commit main stands at, asked of the repository (and kept a minute).
-fn refs() -> Result<(Vec<(u32, u32)>, String), String> {
+// The releases there are, asked of the repository (and kept a minute).
+fn refs() -> Result<Vec<(u32, u32)>, String> {
     static CACHE: OnceLock<Mutex<Option<Refs>>> = OnceLock::new();
     let cache = CACHE.get_or_init(|| Mutex::new(None));
     if let Some(r) = cache.lock().unwrap().as_ref() {
-        if r.at.elapsed() < REFS_FOR { return Ok((r.releases.clone(), r.main.clone())); }
+        if r.at.elapsed() < REFS_FOR { return Ok(r.releases.clone()); }
     }
-    let listed = run(Command::new("git").args(["ls-remote", "--tags", "--heads", REPO_URL]))?;
+    let listed = run(Command::new("git").args(["ls-remote", "--tags", REPO_URL]))?;
     let mut releases = Vec::new();
-    let mut main = String::new();
     for line in listed.lines() {
-        let Some((sha, name)) = line.split_once('\t') else { continue };
-        if name == "refs/heads/main" { main = sha.to_string(); }
+        let Some((_, name)) = line.split_once('\t') else { continue };
         if let Some(tag) = name.strip_prefix("refs/tags/") {
             if let Some(v) = release(tag.trim_end_matches("^{}")) { if !releases.contains(&v) { releases.push(v); } }
         }
     }
     releases.sort();
-    *cache.lock().unwrap() = Some(Refs { at: Instant::now(), releases: releases.clone(), main: main.clone() });
-    Ok((releases, main))
+    *cache.lock().unwrap() = Some(Refs { at: Instant::now(), releases: releases.clone() });
+    Ok(releases)
 }
 
 // ---------- builds ----------
@@ -84,13 +81,12 @@ fn builds() -> &'static Mutex<HashMap<String, Build>> {
     BUILDS.get_or_init(|| Mutex::new(HashMap::new()))
 }
 
-// Where a version's build is kept: a release under its own name; main under the commit it stood at.
-fn build_dir(version: &str, main_sha: &str) -> PathBuf {
-    let name = if version == MAIN { format!("main-{}", &main_sha[..main_sha.len().min(12)]) } else { version.to_string() };
-    Path::new(ROOT).join("builds").join(name)
+// Where a release's build is kept: under its own name.
+fn build_dir(version: &str) -> PathBuf {
+    Path::new(ROOT).join("builds").join(version)
 }
 
-// Checks the version out and builds it into `out` (through a folder beside it, so a build is whole or not there).
+// Checks the release out (its tag) and builds it into `out` (through a folder beside it, so a build is whole or not there).
 // One build at a time: they share the clone.
 fn build(version: &str, out: &Path) -> Result<(), String> {
     static ONE: Mutex<()> = Mutex::new(());
@@ -102,8 +98,8 @@ fn build(version: &str, out: &Path) -> Result<(), String> {
     if !repo.join(".git").exists() {
         run(Command::new("git").args(["clone", "--quiet", REPO_URL]).arg(&repo))?;
     }
-    run(Command::new("git").arg("-C").arg(&repo).args(["fetch", "--quiet", "--tags", "--force", "origin", "main"]))?;
-    let target = if version == MAIN { "FETCH_HEAD".to_string() } else { format!("refs/tags/{}", version) };
+    run(Command::new("git").arg("-C").arg(&repo).args(["fetch", "--quiet", "--tags", "--force", "origin"]))?;
+    let target = format!("refs/tags/{}", version);
     run(Command::new("git").arg("-C").arg(&repo).args(["checkout", "--quiet", "--force", "--detach", &target]))?;
     // (Its tools, installed again only when what it asks for has changed.)
     let lock = fs::read_to_string(repo.join("package-lock.json")).unwrap_or_default();
@@ -120,13 +116,10 @@ fn build(version: &str, out: &Path) -> Result<(), String> {
     let out = root.join("builds").join(out.file_name().unwrap());
     let _ = fs::remove_dir_all(&out);
     fs::rename(&tmp, &out).map_err(|e| e.to_string())?;
-    // (Main's older builds are of no more use.)
-    if version == MAIN {
-        if let Ok(list) = fs::read_dir(root.join("builds")) {
-            for e in list.flatten() {
-                let name = e.file_name().to_string_lossy().to_string();
-                if name.starts_with("main-") && e.path() != out { let _ = fs::remove_dir_all(e.path()); }
-            }
+    // (Builds of the main branch, from when it was served: of no more use.)
+    if let Ok(list) = fs::read_dir(root.join("builds")) {
+        for e in list.flatten() {
+            if e.file_name().to_string_lossy().starts_with("main-") { let _ = fs::remove_dir_all(e.path()); }
         }
     }
     Ok(())
@@ -151,24 +144,25 @@ pub struct Which { v: Option<String>, rules: Option<u32> }
 #[get("/humancraft")]
 pub async fn render(q: web::Query<Which>) -> Result<HttpResponse> {
     let found = web::block(refs).await?;
-    let (releases, _) = match found {
+    let releases = match found {
         Ok(r) => r,
         Err(e) => return Ok(page("Human craft", &format!("<p>The game's repository could not be reached.</p><pre>{}</pre>", escape(&e)), false)),
     };
     let name = |v: &(u32, u32)| format!("v{}.{}", v.0, v.1);
     let version = if let Some(v) = &q.v {
-        if v == MAIN { Some(MAIN.to_string()) } else { release(v).filter(|r| releases.contains(r)).map(|r| name(&r)) }
+        release(v).filter(|r| releases.contains(r)).map(|r| name(&r))
     } else if let Some(x) = q.rules {
         releases.iter().filter(|r| r.0 == x).last().map(name)
     } else {
-        // (The latest release; before there is one, the main branch.)
-        Some(releases.last().map(name).unwrap_or_else(|| MAIN.to_string()))
+        // (The latest release.)
+        releases.last().map(name)
     };
     match version {
         Some(v) => Ok(HttpResponse::Found().insert_header((header::LOCATION, format!("/humancraft/{}/", v))).insert_header((header::CACHE_CONTROL, "no-store")).finish()),
         None => {
             let list = releases.iter().rev().map(|r| format!("<a href=\"/humancraft/{0}/\">{0}</a>", name(r))).collect::<Vec<_>>().join(" · ");
-            Ok(page("Human craft", &format!("<p>There is no such version of the game.</p><p>{}</p>", if list.is_empty() { "<a href=\"/humancraft\">The latest</a>".to_string() } else { list }), false))
+            if list.is_empty() { return Ok(page("Human craft", "<p>No version of the game has been released yet.</p>", false)); }
+            Ok(page("Human craft", &format!("<p>There is no such version of the game.</p><p>{}</p>", list), false))
         }
     }
 }
@@ -177,7 +171,7 @@ pub async fn render(q: web::Query<Which>) -> Result<HttpResponse> {
 pub async fn render_slash(q: web::Query<Which>) -> Result<HttpResponse> {
     // (Only a version's own name is passed on: nothing a visitor typed goes into the header as it came.)
     let query = match (&q.v, q.rules) {
-        (Some(v), _) if v == MAIN || release(v).is_some() => format!("?v={}", v),
+        (Some(v), _) if release(v).is_some() => format!("?v={}", v),
         (None, Some(x)) => format!("?rules={}", x),
         _ => String::new(),
     };
@@ -188,15 +182,15 @@ pub async fn render_slash(q: web::Query<Which>) -> Result<HttpResponse> {
 #[get("/humancraft/{version}/{file:.*}")]
 pub async fn serve(req: HttpRequest, path: web::Path<(String, String)>) -> Result<HttpResponse> {
     let (version, file) = path.into_inner();
-    if version != MAIN && release(&version).is_none() { return Ok(HttpResponse::NotFound().body("No such version.")); }
+    // (A release's name and nothing else: "main", or any other branch, is not served.)
+    let Some(wanted_release) = release(&version) else { return Ok(HttpResponse::NotFound().body("No such version.")); };
     let found = web::block(refs).await?;
-    let (releases, main_sha) = match found {
+    let releases = match found {
         Ok(r) => r,
         Err(e) => return Ok(page("Human craft", &format!("<p>The game's repository could not be reached.</p><pre>{}</pre>", escape(&e)), false)),
     };
-    if version != MAIN && !releases.contains(&release(&version).unwrap()) { return Ok(HttpResponse::NotFound().body("No such version.")); }
-    if version == MAIN && main_sha.is_empty() { return Ok(HttpResponse::NotFound().body("No such version.")); }
-    let dir = build_dir(&version, &main_sha);
+    if !releases.contains(&wanted_release) { return Ok(HttpResponse::NotFound().body("No such version.")); }
+    let dir = build_dir(&version);
 
     if !dir.join("index.html").exists() {
         // (Only the page itself starts a build or waits for one: a stray request for a file does not.)
@@ -230,8 +224,8 @@ pub async fn serve(req: HttpRequest, path: web::Path<(String, String)>) -> Resul
     if !full.starts_with(&base) || !full.is_file() { return Ok(HttpResponse::NotFound().finish()); }
     let named = NamedFile::open(full)?;
     let mut res = named.into_response(&req);
-    // (A release never changes, and its assets are named by their content: kept long. Pages, and all of main, checked each time.)
-    let lasting = version != MAIN && wanted.starts_with("assets/");
+    // (A release never changes, and its assets are named by their content: kept long. Its pages are checked each time.)
+    let lasting = wanted.starts_with("assets/");
     res.headers_mut().insert(header::CACHE_CONTROL, header::HeaderValue::from_static(if lasting { "public, max-age=31536000, immutable" } else { "no-cache" }));
     Ok(res)
 }
