@@ -14,6 +14,7 @@ use pages::wordle_solver;
 use pages::lucasodon;
 use pages::comunicacao_efetiva;
 use pages::humancraft;
+use pages::puericultura;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -55,6 +56,15 @@ async fn main() -> std::io::Result<()> {
             .service(humancraft::render)
             .service(humancraft::render_slash)
             .service(humancraft::serve)
+            .service(puericultura::render)
+            .service(puericultura::login)
+            .service(puericultura::logout)
+            .service(puericultura::list)
+            .service(puericultura::preview)
+            .service(puericultura::create)
+            .service(puericultura::update)
+            .service(puericultura::delete)
+            .service(puericultura::consulta)
     })
     .bind(("127.0.0.1", 8080))?
     .run()

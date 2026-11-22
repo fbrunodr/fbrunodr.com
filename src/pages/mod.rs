@@ -8,3 +8,4 @@ pub mod wordle_solver;
 pub mod lucasodon;
 pub mod comunicacao_efetiva;
 pub mod humancraft;
+pub mod puericultura;
