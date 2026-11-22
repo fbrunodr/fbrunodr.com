@@ -1,0 +1,376 @@
+/* Loaded only on /puericultura. Light page under the site's dark navbar (see lucasodon.css for why the
+   navbar rule is scoped by id). Laid out for a phone first: the list is used in the consulting room and
+   on the street. */
+body { background-color: #eef2f6; }
+#navbarDiv .navbar { background: rgb(33, 35, 41); border-bottom: none; }
+body.modal-aberto { overflow: hidden; }
+
+:root {
+  --verde: #15803d;
+  --vermelho: #b91c1c;
+  --tinta: #0f172a;
+  --tinta-2: #475569;
+  --linha: #d5dce6;
+}
+
+.content {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 16px 48px;
+  color: var(--tinta);
+}
+
+[hidden] { display: none !important; }
+
+/* ---------- Buttons and fields ---------- */
+.btn {
+  font: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  min-height: 44px;
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: 1px solid var(--linha, #d5dce6);
+  background: #ffffff;
+  color: #0f172a;
+  cursor: pointer;
+}
+.btn:hover { background: #f1f5f9; }
+.btn.primary { background: #1d4ed8; border-color: #1d4ed8; color: #ffffff; }
+.btn.primary:hover { background: #1e40af; }
+.btn.primary:disabled { opacity: 0.6; cursor: default; }
+.btn.danger { color: #b91c1c; border-color: #fecaca; }
+.btn.danger:hover { background: #fee2e2; }
+.btn.link { border: none; background: none; color: #1d4ed8; padding: 10px 4px; }
+.btn.toggle.ativo { background: #b91c1c; border-color: #b91c1c; color: #ffffff; }
+.btn:focus-visible, input:focus-visible, select:focus-visible, .crianca:focus-visible, .modal-close:focus-visible {
+  outline: 3px solid #93c5fd;
+  outline-offset: 2px;
+}
+
+input[type="text"], input[type="search"], input[type="date"], input[type="number"], input[type="password"], select {
+  font: inherit;
+  font-size: 1rem;
+  min-height: 44px;
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #0f172a;
+}
+
+/* ---------- Login ---------- */
+.pk-login {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 22px;
+  padding-top: 120px;
+}
+
+.login-card {
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 26px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  max-width: 320px;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.12);
+}
+.login-card label { font-size: 0.85rem; font-weight: 600; color: #475569; }
+.login-erro { color: #b91c1c; font-size: 0.9rem; font-weight: 600; }
+
+/* ---------- Header and summary ---------- */
+.pk-app { padding-top: 96px; }
+
+.pk-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.pk-title { font-size: 1.7rem; font-weight: 700; letter-spacing: -0.01em; }
+.pk-sub { color: var(--tinta-2); font-size: 0.95rem; margin-top: 2px; }
+
+.resumo {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin: 18px 0;
+}
+.cartao {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 12px 14px;
+  border-top: 4px solid #94a3b8;
+  min-width: 0;
+}
+.cartao.verde { border-top-color: var(--verde); }
+.cartao.vermelho { border-top-color: var(--vermelho); }
+.cartao .lbl { font-size: 0.78rem; font-weight: 600; color: var(--tinta-2); overflow-wrap: anywhere; }
+.cartao .val { font-size: 1.6rem; font-weight: 700; }
+.cartao.verde .val { color: var(--verde); }
+.cartao.vermelho .val { color: var(--vermelho); }
+
+.barra { display: flex; flex-direction: column; gap: 10px; }
+.filtros { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.filtros input[type="search"] { grid-column: 1 / -1; }
+
+.msg { min-height: 0; font-size: 0.9rem; font-weight: 600; }
+.msg:not(:empty) { margin: 12px 0 0; padding: 10px 12px; border-radius: 10px; }
+.msg.ok { background: var(--verde-fundo, #dcfce7); color: #15803d; }
+.msg.err:not(:empty) { background: #fee2e2; color: #b91c1c; }
+
+/* ---------- The list ---------- */
+.lista { list-style: none; display: flex; flex-direction: column; gap: 8px; margin-top: 16px; }
+
+.crianca {
+  font: inherit;
+  width: 100%;
+  text-align: left;
+  display: grid;
+  grid-template-columns: 14px 1fr;
+  column-gap: 12px;
+  row-gap: 8px;
+  align-items: start;
+  padding: 14px;
+  background: #ffffff;
+  border: 1px solid var(--linha);
+  border-left: 6px solid var(--verde);
+  border-radius: 12px;
+  color: inherit;
+  cursor: pointer;
+}
+.crianca:hover { background: #f8fafc; }
+.crianca.vermelho { border-left-color: var(--vermelho); background: #fffafa; }
+.crianca.vermelho:hover { background: #fff1f1; }
+
+.luz {
+  width: 14px;
+  height: 14px;
+  margin-top: 4px;
+  border-radius: 50%;
+  background: var(--verde);
+}
+.crianca.vermelho .luz { background: var(--vermelho); }
+
+.quem, .quando { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.quando { grid-column: 2; align-items: flex-start; }
+.nome { font-weight: 700; font-size: 1.02rem; overflow-wrap: anywhere; }
+.detalhe { font-size: 0.86rem; color: var(--tinta-2); overflow-wrap: anywhere; }
+
+.selo {
+  display: inline-block;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: #dcfce7;
+  color: #15803d;
+}
+.crianca.vermelho .selo, .selo.vermelho { background: #fee2e2; color: #b91c1c; }
+
+.vazio { margin-top: 28px; text-align: center; color: var(--tinta-2); }
+
+/* ---------- Modals ---------- */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(15, 23, 42, 0.55);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+.modal {
+  background: #ffffff;
+  color: #0f172a;
+  width: 100%;
+  max-width: 640px;
+  max-height: 92vh;
+  overflow-y: auto;
+  padding: 20px 18px 24px;
+  border-radius: 18px 18px 0 0;
+}
+.modal-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+.modal-head h2 { font-size: 1.25rem; font-weight: 700; overflow-wrap: anywhere; }
+.modal-close {
+  font-size: 1.7rem;
+  line-height: 1;
+  width: 44px;
+  height: 44px;
+  flex: none;
+  border: none;
+  border-radius: 10px;
+  background: #f1f5f9;
+  color: #475569;
+  cursor: pointer;
+}
+.modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; flex-wrap: wrap; }
+
+.form-card { display: grid; grid-template-columns: 1fr; gap: 14px; }
+.field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.field label, .registrar label { font-size: 0.85rem; font-weight: 600; color: #475569; }
+
+.previa:not(:empty) {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #f1f5f9;
+  font-size: 0.93rem;
+}
+
+/* ---------- Child sheet ---------- */
+.dados { display: grid; grid-template-columns: 1fr; gap: 10px; }
+.dado dt { font-size: 0.78rem; font-weight: 600; color: #475569; }
+.dado dd { font-size: 0.97rem; overflow-wrap: anywhere; }
+
+.checklist-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 22px 0 10px;
+  padding-top: 18px;
+  border-top: 1px solid #d5dce6;
+}
+.checklist-head h3 { font-size: 1.05rem; font-weight: 700; }
+.checklist-head select { width: auto; flex: 1 1 180px; max-width: 260px; }
+#ficha-corpo h4 { font-size: 0.85rem; font-weight: 700; color: #475569; margin: 16px 0 6px; text-transform: uppercase; letter-spacing: 0.04em; }
+
+.checklist { list-style: none; display: flex; flex-direction: column; }
+.checklist label {
+  display: grid;
+  grid-template-columns: 22px 1fr;
+  gap: 12px;
+  align-items: start;
+  padding: 10px 4px;
+  border-bottom: 1px solid #eef2f6;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  cursor: pointer;
+}
+.checklist input { width: 22px; height: 22px; margin-top: 1px; accent-color: #15803d; }
+.checklist input:checked + span { color: #64748b; text-decoration: line-through; }
+
+.nota { font-size: 0.84rem; color: #475569; margin: 10px 0; }
+
+.registrar {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+  margin-top: 16px;
+  padding: 14px;
+  border-radius: 12px;
+  background: #f1f5f9;
+}
+
+/* ---------- Wider screens ---------- */
+@media (min-width: 640px) {
+  .barra { flex-direction: row; align-items: center; justify-content: space-between; }
+  .filtros { grid-template-columns: minmax(180px, 1fr) auto auto; flex: 1; max-width: 560px; }
+  .filtros input[type="search"] { grid-column: auto; }
+  .crianca { grid-template-columns: 14px 1fr minmax(220px, auto); align-items: center; }
+  .luz { margin-top: 0; }
+  .quando { grid-column: auto; align-items: flex-end; text-align: right; }
+  .modal-overlay { align-items: center; padding: 20px; }
+  .modal { border-radius: 18px; padding: 24px 26px 26px; }
+  .form-card, .dados { grid-template-columns: 1fr 1fr; }
+  .wide { grid-column: 1 / -1; }
+  .registrar { grid-template-columns: auto 1fr auto; align-items: center; }
+}
+
+/* ---------- Tabs and the monthly schedule ---------- */
+.abas { display: flex; gap: 4px; margin-bottom: 16px; border-bottom: 2px solid var(--linha); }
+.aba {
+  font: inherit;
+  font-size: 0.97rem;
+  font-weight: 600;
+  min-height: 44px;
+  padding: 10px 14px;
+  margin-bottom: -2px;
+  border: none;
+  border-bottom: 3px solid transparent;
+  background: none;
+  color: var(--tinta-2);
+  cursor: pointer;
+}
+.aba.ativa { color: #1d4ed8; border-bottom-color: #1d4ed8; }
+.aba:focus-visible, .mes summary:focus-visible, .mes-crianca:focus-visible { outline: 3px solid #93c5fd; outline-offset: 2px; }
+
+#agenda { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+.mes { background: #ffffff; border: 1px solid var(--linha); border-radius: 12px; }
+.mes summary {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 6px 12px;
+  align-items: baseline;
+  padding: 14px;
+  border-radius: 12px;
+  cursor: pointer;
+  list-style: none;
+}
+.mes summary::-webkit-details-marker { display: none; }
+.mes-nome { font-weight: 700; }
+.mes-nome::before { content: "▸"; display: inline-block; width: 1.1em; color: var(--tinta-2); }
+.mes[open] .mes-nome::before { content: "▾"; }
+.mes-vagas { font-size: 0.9rem; color: var(--tinta-2); white-space: nowrap; }
+.mes-vagas strong { font-size: 1.35rem; color: var(--tinta); }
+.mes-barra { grid-column: 1 / -1; display: flex; height: 10px; border-radius: 999px; background: #eef2f6; overflow: hidden; }
+.mes-barra .previstas { background: #1d4ed8; }
+.mes-barra .atraso { background: var(--vermelho); }
+.mes-partes { grid-column: 1 / -1; }
+.mes-lista { list-style: none; border-top: 1px solid #eef2f6; padding: 4px 6px 8px; }
+.mes-crianca {
+  font: inherit;
+  width: 100%;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 8px;
+  border: none;
+  border-radius: 8px;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+}
+.mes-crianca:hover { background: #f1f5f9; }
+.mes-crianca .nome { font-size: 0.95rem; }
+.mes-nada { padding: 0 14px 14px; }
+
+/* ---------- Premature children ---------- */
+.abas { overflow-x: auto; }
+.aba { white-space: nowrap; }
+.crianca.prematuro { grid-template-columns: 1fr; border-left-color: #1d4ed8; }
+.idades { display: flex; gap: 24px; flex-wrap: wrap; }
+.idade-item { display: flex; flex-direction: column; gap: 1px; }
+.idade-item strong { font-size: 1.1rem; color: #1d4ed8; }
+li.vazio { margin-top: 12px; }
+@media (min-width: 640px) {
+  .crianca.prematuro { grid-template-columns: 1fr auto; }
+}
+@media (max-width: 480px) {
+  .abas { gap: 0; }
+  .aba { font-size: 0.86rem; padding: 10px 8px; }
+}
+
+/* ---------- Gestational age: weeks and days side by side ---------- */
+fieldset.ig { border: none; display: grid; grid-template-columns: 1fr 1fr; gap: 6px 10px; }
+fieldset.ig legend { font-size: 0.85rem; font-weight: 600; color: #475569; margin-bottom: 6px; padding: 0; }
+fieldset.ig label { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; font-weight: 400; color: #475569; min-width: 0; }
+fieldset.ig input { min-width: 0; }
+
+/* ---------- Supplementation, in the child's sheet ---------- */
+.suplementacao { margin-top: 22px; padding-top: 18px; border-top: 1px solid #d5dce6; }
+.suplementacao h3 { font-size: 1.05rem; font-weight: 700; }
+.suplemento { margin-top: 10px; padding: 12px 14px; border-radius: 12px; background: #f1f5f9; }
+#ficha-corpo .suplemento h4 { margin: 0 0 4px; }
+.suplemento .agora { font-size: 0.97rem; font-weight: 600; line-height: 1.4; }
+.suplemento .nota { margin: 6px 0 0; }
